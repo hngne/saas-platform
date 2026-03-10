@@ -1,0 +1,39 @@
+import { z } from "zod";
+import dotenv from "dotenv";
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV || "development"}` });
+
+const envSchema = z.object({
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
+  PORT: z.string().default("8080"),
+
+  DB_PLATFORM_URL: z.string().min(1, "DB_PLATFORM_URL is required"),
+
+  REDIS_HOST: z.string().default("localhost"),
+  REDIS_PORT: z.string().default("6379"),
+  REDIS_USERNAME: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
+
+  MONGO_URI: z.string().min(1, "MONGO_URI is required"),
+
+  JWT_ACCESS_SECRET: z.string().min(1, "JWT_ACCESS_SECRET is required"),
+  JWT_REFRESH_SECRET: z.string().min(1, "JWT_REFRESH_SECRET is required"),
+  JWT_ACCESS_EXPIRES: z.string().default("1h"),
+  JWT_REFRESH_EXPIRES: z.string().default("7d"),
+
+  BCRYPT_ROUNDS: z.string().default("10"),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error(
+    "Invalid environment variables:",
+    parsed.error.flatten().fieldErrors,
+  );
+  process.exit(1);
+}
+
+export const env = parsed.data;

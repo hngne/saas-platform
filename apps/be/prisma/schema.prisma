@@ -1,15 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DB_PLATFORM_URL")
+}
+
+model Admin {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  email      String   @unique @db.VarChar(100)
+  password   String   @db.VarChar(255)
+  name       String?  @db.VarChar(100)
+  role       String   @default("STAFF") @db.VarChar(20)
+  status     String   @default("ACTIVE") @db.VarChar(20)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
+
+model Tenant {
+  id            String         @id @default(uuid()) @db.VarChar(36)
+  slug          String         @unique @db.VarChar(100)
+  business_type String         @db.VarChar(20)
+  db_name       String         @unique @db.VarChar(100)
+  status        String         @default("ACTIVE") @db.VarChar(20)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  profile       TenantProfile?
+
+  @@index([slug])
+  @@index([status])
+  @@map("tenants")
+}
+
+model TenantProfile {
+  id                String   @id @default(uuid()) @db.VarChar(36)
+  tenant_id         String   @unique @db.VarChar(36)
+  owner_name        String?  @db.VarChar(100)
+  phone             String?  @db.VarChar(20)
+  email             String?  @db.VarChar(100)
+  address           String?  @db.Text
+  tax_code          String?  @db.VarChar(50)
+  store_name        String?  @db.VarChar(100)
+  store_description String?  @db.Text
+  logo_url          String?  @db.VarChar(255)
+  favicon_url       String?  @db.VarChar(255)
+  primary_color     String?  @db.VarChar(20)
+  secondary_color   String?  @db.VarChar(20)
+  banner_url        String?  @db.VarChar(255)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenant_id], references: [id])
+
+  @@index([tenant_id])
+  @@map("tenant_profiles")
 }
