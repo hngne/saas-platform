@@ -12,7 +12,7 @@ model Admin {
   email      String   @unique @db.VarChar(100)
   password   String   @db.VarChar(255)
   name       String?  @db.VarChar(100)
-  role       String   @default("STAFF") @db.VarChar(20)
+  role       String   @default("ADMIN") @db.VarChar(20)
   status     String   @default("ACTIVE") @db.VarChar(20)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -57,4 +57,16 @@ model TenantProfile {
 
   @@index([tenant_id])
   @@map("tenant_profiles")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  user_id    String   @db.VarChar(36)
+  user_type  String   @db.VarChar(20)
+  token      String   @unique @db.VarChar(500)
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([user_id, user_type])
+  @@map("refresh_tokens")
 }

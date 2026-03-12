@@ -24,6 +24,8 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES: z.string().default("7d"),
 
   BCRYPT_ROUNDS: z.string().default("10"),
+
+  CORS_ORIGINS: z.string().default("http://localhost:3000"),
 });
 
 const parsed = envSchema.safeParse(process.env);
