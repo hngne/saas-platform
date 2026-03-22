@@ -19,7 +19,11 @@ app.use(
 
       const allowedOrigins = env.CORS_ORIGINS.split(",").map((o) => o.trim());
 
-      if (allowedOrigins.includes(origin)) {
+      const isLocalhost = /^https?:\/\/([^.]+\.)?localhost(:\d+)?$/.test(
+        origin,
+      );
+
+      if (allowedOrigins.includes(origin) || isLocalhost) {
         callback(null, true);
       } else {
         callback(new Error(`CORS blocked: ${origin}`));

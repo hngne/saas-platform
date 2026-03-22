@@ -36,3 +36,18 @@ export interface UserLoginResponse {
   };
   tokens: AuthTokens;
 }
+
+export interface MerchantRegisterResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: string;
+  };
+  tenant: {
+    id: string;
+    slug: string;
+    store_name: string | null;
+  };
+  tokens: AuthTokens;
+}

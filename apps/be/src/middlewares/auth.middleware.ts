@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken, TokenPayload } from "../shared/utils/jwt.util";
 import { APIResponse } from "../shared/utils/response.util";
+import { Tenant, TenantProfile } from "@prisma/client";
 
 // Extend Request để attach user vào
 declare global {
   namespace Express {
     interface Request {
       user?: TokenPayload;
+      tenant?: Tenant & { profile: TenantProfile | null };
     }
   }
 }

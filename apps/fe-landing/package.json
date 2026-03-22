@@ -11,11 +11,15 @@
   "dependencies": {
     "axios": "^1.13.6",
     "dayjs": "^1.11.19",
+    "js-cookie": "^3.0.5",
+    "lucide-vue-next": "^0.577.0",
     "vue": "^3.5.25",
-    "vue-router": "^5.0.3"
+    "vue-router": "^5.0.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.2",
     "@vue/tsconfig": "^0.8.1",

@@ -61,4 +61,59 @@ export class AuthRepository {
       },
     });
   }
+
+  // ─── Tenant ───────────────────────────────────────────
+
+  async findTenantBySlug(slug: string) {
+    return prisma.tenant.findUnique({ where: { slug } });
+  }
+
+  async createTenantWithProfile(data: {
+    id: string;
+    slug: string;
+    business_type: string;
+    db_name: string;
+    profile: {
+      id: string;
+      store_name: string;
+      owner_name: string;
+      phone?: string;
+      email: string;
+    };
+  }) {
+    return prisma.tenant.create({
+      data: {
+        id: data.id,
+        slug: data.slug,
+        business_type: data.business_type,
+        db_name: data.db_name,
+        status: "ACTIVE",
+        profile: {
+          create: {
+            id: data.profile.id,
+            store_name: data.profile.store_name,
+            owner_name: data.profile.owner_name,
+            phone: data.profile.phone,
+            email: data.profile.email,
+          },
+        },
+      },
+      include: { profile: true },
+    });
+  }
+
+  async findTenantByEmail(email: string) {
+    return prisma.tenant.findFirst({
+      where: {
+        profile: {
+          email,
+        },
+      },
+      include: { profile: true },
+    });
+  }
+
+  async deleteTenantById(id: string) {
+    return prisma.tenant.delete({ where: { id } }).catch(() => {});
+  }
 }

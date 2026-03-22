@@ -10,6 +10,12 @@ const envSchema = z.object({
   PORT: z.string().default("8080"),
 
   DB_PLATFORM_URL: z.string().min(1, "DB_PLATFORM_URL is required"),
+  RETAIL_DB_URL: z.string().min(1, "RETAIL_DB_URL is required"),
+
+  DB_HOST: z.string().default("localhost"),
+  DB_PORT: z.string().default("3306"),
+  DB_USER: z.string().default("root"),
+  DB_PASS: z.string().default(""),
 
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.string().default("6379"),

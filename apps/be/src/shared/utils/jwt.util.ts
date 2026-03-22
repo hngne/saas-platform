@@ -10,6 +10,7 @@ export interface TokenPayload {
   userType: UserType;
   role?: string;
   tenantId?: string;
+  dbName?: string;
   businessType?: "RETAIL" | "HOTEL";
 }
 
