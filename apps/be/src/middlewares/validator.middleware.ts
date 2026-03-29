@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema } from "zod";
+import { z, ZodSchema } from "zod";
 import { APIResponse } from "../shared/utils/response.util";
 
 type ValidateTarget = "body" | "params" | "query";

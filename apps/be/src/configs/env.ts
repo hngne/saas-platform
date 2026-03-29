@@ -32,6 +32,9 @@ const envSchema = z.object({
   BCRYPT_ROUNDS: z.string().default("10"),
 
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
+  CLOUDINARY_NAME: z.string().min(1, "CLOUDINARY_NAME is required"),
+  CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
+  CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
 });
 
 const parsed = envSchema.safeParse(process.env);
