@@ -11,11 +11,11 @@ defineProps<{
 <template>
   <div class="stat-card fade-in-up">
     <div class="stat-header">
-      <div class="stat-icon-wrap" :style="{ background: `${color || '#FF6B2B'}15` }">
+      <div class="stat-icon-wrap" :style="{ background: `${color || '#FF6B2B'}12` }">
         <i :class="icon" :style="{ color: color || '#FF6B2B' }"></i>
       </div>
       <span v-if="trend !== undefined" class="stat-trend" :class="trend >= 0 ? 'up' : 'down'">
-        <i :class="trend >= 0 ? 'pi pi-arrow-up-right' : 'pi pi-arrow-down-right'" style="font-size: 0.65rem"></i>
+        <i :class="trend >= 0 ? 'pi pi-arrow-up-right' : 'pi pi-arrow-down-right'" style="font-size: 0.6rem"></i>
         {{ Math.abs(trend) }}%
       </span>
     </div>
@@ -30,11 +30,10 @@ defineProps<{
   border-radius: 14px;
   padding: 20px;
   border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 .stat-header {
@@ -44,20 +43,20 @@ defineProps<{
   margin-bottom: 14px;
 }
 .stat-icon-wrap {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 .stat-trend {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   padding: 3px 8px;
   border-radius: 20px;
 }
@@ -70,14 +69,21 @@ defineProps<{
   background: #FEF2F2;
 }
 .stat-value {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 .stat-title {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .stat-card { padding: 16px; }
+  .stat-value { font-size: 1.25rem; }
+  .stat-icon-wrap { width: 36px; height: 36px; font-size: 0.95rem; }
 }
 </style>

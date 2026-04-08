@@ -53,22 +53,23 @@ onMounted(fetchAll)
 
 <template>
   <div>
+    <p class="page-section-label">VẬN CHUYỂN</p>
     <div class="flex items-center justify-between mb-5">
-      <h3 class="text-lg font-bold" style="color: var(--text-primary)">Phương thức vận chuyển</h3>
-      <Button label="Thêm mới" icon="pi pi-plus" class="btn-gradient" @click="openCreate" />
+      <h3 class="text-base font-bold" style="color: var(--text-primary)">Phương thức vận chuyển</h3>
+      <Button label="Thêm mới" icon="pi pi-plus" class="btn-primary" @click="openCreate" />
     </div>
 
     <div class="app-card">
       <DataTable :value="methods" :loading="loading" class="text-sm" stripedRows>
         <template #empty><EmptyState icon="pi pi-truck" title="Chưa có phương thức" /></template>
-        <Column header="Tên" field="name" style="min-width: 200px" />
-        <Column header="Phí vận chuyển" style="width: 150px">
+        <Column header="Tên" field="name" style="min-width: 180px" />
+        <Column header="Phí" style="width: 130px">
           <template #body="{ data }"><span class="font-semibold">{{ formatVND(data.fee) }}</span></template>
         </Column>
-        <Column header="Thời gian" style="width: 130px">
+        <Column header="Thời gian" class="hide-mobile" style="width: 110px">
           <template #body="{ data }">{{ data.estimated_days ? `${data.estimated_days} ngày` : '—' }}</template>
         </Column>
-        <Column header="Trạng thái" style="width: 100px">
+        <Column header="TT" style="width: 70px">
           <template #body="{ data }"><ToggleSwitch :modelValue="data.is_active" @update:modelValue="toggleActive(data)" /></template>
         </Column>
         <Column header="" style="width: 80px">

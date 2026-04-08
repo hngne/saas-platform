@@ -100,37 +100,39 @@ onMounted(() => {
 
 <template>
   <div>
+    <p class="page-section-label">QUẢN LÝ SẢN PHẨM</p>
+
     <!-- Filter bar -->
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <div class="flex items-center gap-3 flex-wrap">
-        <InputText
-          v-model="filter.search"
-          placeholder="Tìm sản phẩm..."
-          class="w-64"
-          @keyup.enter="fetchProducts"
-        />
-        <Select
-          v-model="filter.category_id"
-          :options="categories"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Danh mục"
-          showClear
-          class="w-44"
-          @change="fetchProducts"
-        />
-        <Select
-          v-model="filter.is_active"
-          :options="[{ label: 'Hoạt động', value: 'true' }, { label: 'Ngừng', value: 'false' }]"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Trạng thái"
-          showClear
-          class="w-36"
-          @change="fetchProducts"
-        />
+    <div class="filter-bar mb-5">
+      <InputText
+        v-model="filter.search"
+        placeholder="Tìm sản phẩm..."
+        class="filter-search"
+        @keyup.enter="fetchProducts"
+      />
+      <Select
+        v-model="filter.category_id"
+        :options="categories"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Danh mục"
+        showClear
+        class="filter-cat hide-mobile"
+        @change="fetchProducts"
+      />
+      <Select
+        v-model="filter.is_active"
+        :options="[{ label: 'Hoạt động', value: 'true' }, { label: 'Ngừng', value: 'false' }]"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Trạng thái"
+        showClear
+        class="filter-status hide-mobile"
+        @change="fetchProducts"
+      />
+      <div class="ml-auto">
+        <Button label="Thêm sản phẩm" icon="pi pi-plus" class="btn-primary" @click="router.push('/products/new')" />
       </div>
-      <Button label="Thêm sản phẩm" icon="pi pi-plus" class="btn-gradient" @click="router.push('/products/new')" />
     </div>
 
     <!-- Table -->
@@ -152,7 +154,7 @@ onMounted(() => {
           <EmptyState icon="pi pi-box" title="Chưa có sản phẩm" />
         </template>
 
-        <Column header="Sản phẩm" style="min-width: 280px">
+        <Column header="Sản phẩm" style="min-width: 240px">
           <template #body="{ data }">
             <div class="flex items-center gap-3">
               <img
@@ -160,8 +162,8 @@ onMounted(() => {
                 :src="data.images[0].image_url"
                 class="w-10 h-10 rounded-lg object-cover"
               />
-              <div v-else class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                <i class="pi pi-image" style="color: #d1d5db"></i>
+              <div v-else class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: #f1f5f9">
+                <i class="pi pi-image" style="color: #cbd5e1"></i>
               </div>
               <div>
                 <p class="font-semibold text-sm" style="color: var(--text-primary)">{{ data.name }}</p>
@@ -171,13 +173,13 @@ onMounted(() => {
           </template>
         </Column>
 
-        <Column header="Giá" style="width: 130px">
+        <Column header="Giá" style="width: 120px">
           <template #body="{ data }">
             <span class="font-semibold" style="color: var(--primary)">{{ formatVND(data.base_price) }}</span>
           </template>
         </Column>
 
-        <Column header="Tồn kho" style="width: 90px; text-align: center">
+        <Column header="Tồn kho" style="width: 80px; text-align: center">
           <template #body="{ data }">
             <span :class="getStock(data) <= 5 ? 'text-red-500 font-bold' : ''">
               {{ getStock(data) }}
@@ -185,7 +187,7 @@ onMounted(() => {
           </template>
         </Column>
 
-        <Column header="Biến thể" style="width: 90px; text-align: center">
+        <Column header="Biến thể" class="hide-mobile" style="width: 80px; text-align: center">
           <template #body="{ data }">
             <span v-if="data.has_variant" class="text-xs px-2 py-0.5 rounded-full" style="background: #EFF6FF; color: #3B82F6">
               {{ data.variants?.length || 0 }}
@@ -194,13 +196,13 @@ onMounted(() => {
           </template>
         </Column>
 
-        <Column header="Trạng thái" style="width: 100px">
+        <Column header="TT" style="width: 70px">
           <template #body="{ data }">
             <ToggleSwitch :modelValue="data.is_active" @update:modelValue="toggleActive(data)" />
           </template>
         </Column>
 
-        <Column header="" style="width: 100px">
+        <Column header="" style="width: 90px">
           <template #body="{ data }">
             <div class="flex gap-1">
               <Button icon="pi pi-eye" text rounded size="small" @click="router.push(`/products/${data.id}`)" />
@@ -221,3 +223,12 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+.filter-search { width: 220px; }
+.filter-cat { width: 160px; }
+.filter-status { width: 130px; }
+@media (max-width: 768px) {
+  .filter-search { width: 100% !important; }
+}
+</style>

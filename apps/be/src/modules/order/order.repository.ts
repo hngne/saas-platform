@@ -68,7 +68,8 @@ export class OrderRepository {
               discount_value: true,
             },
           },
-          shipping_method: { select: { id: true, name: true, fee: true } },
+          shipping_method: { select: { id: true, name: true, type: true, fee: true } },
+          pickup_store: { select: { id: true, name: true, address: true, phone: true } },
           payment: true,
         },
         orderBy: { created_at: sort_order },
@@ -110,6 +111,7 @@ export class OrderRepository {
         },
         voucher: true,
         shipping_method: true,
+        pickup_store: true,
         payment: true,
       },
     });

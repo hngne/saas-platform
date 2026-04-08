@@ -83,9 +83,6 @@ export class InventoryRepository {
       where: { variant_id: variantId },
       orderBy: { created_at: "desc" },
       take: limit,
-      include: {
-        user: { select: { id: true, name: true } },
-      },
     });
   }
 
@@ -119,7 +116,6 @@ export class InventoryRepository {
               },
             },
           },
-          user: { select: { id: true, name: true } },
         },
         orderBy: { created_at: "desc" },
         skip: (page - 1) * limit,

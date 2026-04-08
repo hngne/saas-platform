@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { dashboardService } from '@/services/dashboard.service'
 import { useAppToast } from '@/composables/useToast'
 import { formatVND, formatNumber } from '@/utils/format'
@@ -34,6 +34,7 @@ const chartOptions = ref<any>({
   grid: { borderColor: '#f3f4f6', strokeDashArray: 4 },
 })
 const chartSeries = ref([{ name: 'Doanh thu', data: [] as number[] }])
+const chartHeight = computed(() => window.innerWidth < 768 ? 220 : 320)
 
 // Top selling
 const topSelling = ref<any[]>([])
@@ -100,8 +101,11 @@ onMounted(async () => {
   </div>
 
   <div v-else class="dashboard">
+    <!-- Section label -->
+    <p class="page-section-label">TỔNG QUAN</p>
+
     <!-- Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <StatCard
         title="Tổng doanh thu"
         :value="formatVND(summary.totalRevenue || 0)"
@@ -132,38 +136,38 @@ onMounted(async () => {
 
     <!-- Revenue Chart -->
     <div class="app-card p-5 mb-6 fade-in-up">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold" style="color: var(--text-primary)">Biểu đồ doanh thu</h3>
-        <div class="flex gap-2 items-center">
+      <div class="chart-header">
+        <h3 class="text-sm font-bold" style="color: var(--text-primary)">Biểu đồ doanh thu</h3>
+        <div class="chart-controls">
           <Select
             v-model="revenueType"
             :options="revenueTypeOptions"
             optionLabel="label"
             optionValue="value"
-            class="w-40"
+            class="chart-select"
             @change="fetchRevenue()"
           />
-          <Button icon="pi pi-file-excel" severity="success" text rounded @click="exportFile('excel')" v-tooltip="'Xuất Excel'" />
-          <Button icon="pi pi-file-pdf" severity="danger" text rounded @click="exportFile('pdf')" v-tooltip="'Xuất PDF'" />
+          <Button icon="pi pi-file-excel" severity="success" text rounded size="small" class="hide-mobile" @click="exportFile('excel')" v-tooltip="'Xuất Excel'" />
+          <Button icon="pi pi-file-pdf" severity="danger" text rounded size="small" class="hide-mobile" @click="exportFile('pdf')" v-tooltip="'Xuất PDF'" />
         </div>
       </div>
-      <ApexChart type="area" :options="chartOptions" :series="chartSeries" height="320" />
+      <ApexChart type="area" :options="chartOptions" :series="chartSeries" :height="chartHeight" />
     </div>
 
     <!-- Top Selling / Not Selling -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="app-card p-5 fade-in-up">
-        <h3 class="text-base font-bold mb-4" style="color: var(--text-primary)">
+        <h3 class="text-sm font-bold mb-4" style="color: var(--text-primary)">
           <i class="pi pi-arrow-up mr-2" style="color: #10B981"></i>Top bán chạy
         </h3>
         <DataTable :value="topSelling" :rows="5" class="text-sm">
           <Column field="name" header="Sản phẩm" />
-          <Column field="total_sold" header="Đã bán" style="width: 100px; text-align: right">
+          <Column field="total_sold" header="Đã bán" style="width: 90px; text-align: right">
             <template #body="{ data }">
               <span class="font-semibold">{{ formatNumber(data.total_sold || data.totalSold || 0) }}</span>
             </template>
           </Column>
-          <Column field="revenue" header="Doanh thu" style="width: 140px; text-align: right">
+          <Column field="revenue" header="Doanh thu" class="hide-mobile" style="width: 130px; text-align: right">
             <template #body="{ data }">
               <span class="font-semibold" style="color: #10B981">{{ formatVND(data.revenue || data.totalRevenue || 0) }}</span>
             </template>
@@ -172,17 +176,17 @@ onMounted(async () => {
       </div>
 
       <div class="app-card p-5 fade-in-up">
-        <h3 class="text-base font-bold mb-4" style="color: var(--text-primary)">
+        <h3 class="text-sm font-bold mb-4" style="color: var(--text-primary)">
           <i class="pi pi-arrow-down mr-2" style="color: #EF4444"></i>Bán chậm nhất
         </h3>
         <DataTable :value="topNotSelling" :rows="5" class="text-sm">
           <Column field="name" header="Sản phẩm" />
-          <Column field="total_sold" header="Đã bán" style="width: 100px; text-align: right">
+          <Column field="total_sold" header="Đã bán" style="width: 90px; text-align: right">
             <template #body="{ data }">
               <span class="font-semibold" style="color: #EF4444">{{ formatNumber(data.total_sold || data.totalSold || 0) }}</span>
             </template>
           </Column>
-          <Column field="stock" header="Tồn kho" style="width: 100px; text-align: right">
+          <Column field="stock" header="Tồn kho" style="width: 90px; text-align: right">
             <template #body="{ data }">
               <span>{{ formatNumber(data.stock || data.totalStock || 0) }}</span>
             </template>
@@ -196,5 +200,24 @@ onMounted(async () => {
 <style scoped>
 .dashboard {
   max-width: 1400px;
+}
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-select { width: 140px; }
+
+@media (max-width: 768px) {
+  .chart-header { flex-direction: column; align-items: flex-start; }
+  .chart-select { width: 100%; }
 }
 </style>

@@ -12,6 +12,11 @@ import orderRouter from "@/modules/order/order.router";
 import promotionRouter from "@/modules/promotion/promotion.router";
 import dashboardRouter from "@/modules/dashboard/dashboard.router";
 import attributeRouter from "@/modules/attribute/attribute.router";
+import reviewRouter from "@/modules/review/review.router";
+import storeRouter from "@/modules/store/store.router";
+import blogCategoryRouter from "@/modules/blog/blog-category.router";
+import postRouter from "@/modules/blog/post.router";
+import postCommentRouter from "@/modules/blog/post-comment.router";
 
 const router = Router();
 
@@ -28,5 +33,10 @@ router.use(orderRouter);
 router.use(promotionRouter);
 router.use(dashboardRouter);
 router.use(attributeRouter);
+router.use(reviewRouter);
+router.use(storeRouter);
+router.use(blogCategoryRouter);
+router.use(postRouter);
+router.use(postCommentRouter);
 
 export default router;

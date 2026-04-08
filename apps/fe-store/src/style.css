@@ -1,26 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "primeicons/primeicons.css";
 
 :root {
-  --primary: #FF6B2B;
-  --primary-light: #FF8F5E;
-  --primary-dark: #E55A1F;
-  --gold: #FFD700;
-  --bg-page: #FFF9F5;
-  --bg-sidebar: #1A1A2E;
-  --bg-card: #FFFFFF;
-  --text-primary: #1A1A2E;
-  --text-muted: #6B7280;
-  --text-light: #9CA3AF;
-  --border: #E5E7EB;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-  --info: #3B82F6;
+  --primary: #ff6b2b;
+  --primary-light: #ff8f5e;
+  --primary-dark: #e55a1f;
+  --gold: #ffd700;
+  --bg-page: #f8f9fb;
+  --bg-sidebar: #1a1a2e;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --border: #e5e7eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --sidebar-width: 250px;
+  --sidebar-collapsed: 68px;
+  --header-height: 64px;
 }
 
-/* Base Setup */
+/* ─── Base Reset ────────────────────────────────────────── */
 * {
   margin: 0;
   padding: 0;
@@ -28,7 +31,11 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   background-color: var(--bg-page);
   color: var(--text-primary);
   line-height: 1.6;
@@ -41,10 +48,10 @@ body {
   min-height: 100vh;
 }
 
-/* Scrollbar */
+/* ─── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -57,184 +64,232 @@ body {
   background: #94a3b8;
 }
 
-/* PrimeVue Overrides */
+/* ─── Utility Classes ───────────────────────────────────── */
+.page-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 16px;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ─── PrimeVue Global Overrides ─────────────────────────── */
 .p-toast {
   z-index: 9999 !important;
 }
 
+/* DataTable */
 .p-datatable {
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .p-datatable .p-datatable-thead > tr > th {
   background: #f8fafc;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
-  border-bottom: 2px solid var(--border);
-  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
 }
 
 .p-datatable .p-datatable-tbody > tr {
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .p-datatable .p-datatable-tbody > tr > td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .p-datatable .p-datatable-tbody > tr:hover {
-  background-color: #fffaf7 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  z-index: 1;
-  position: relative;
+  background-color: #f8fafc !important;
 }
 
+/* Paginator */
+.p-paginator .p-paginator-page.p-paginator-page-selected {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* Buttons */
 .p-button.p-button-primary {
   background: var(--primary);
   border-color: var(--primary);
 }
-
 .p-button.p-button-primary:hover {
   background: var(--primary-dark);
   border-color: var(--primary-dark);
 }
 
-/* Gradient Button */
+/* Solid Orange Button — matches Stitch design (no gradient) */
+.btn-primary {
+  background: var(--primary) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(255, 107, 43, 0.2);
+}
+.btn-primary:hover {
+  background: var(--primary-dark) !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 43, 0.3);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Gradient Button — for CTA (login, hero) */
 .btn-gradient {
-  background: linear-gradient(135deg, var(--primary), var(--gold));
-  border: none;
-  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-light)
+  ) !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 14px rgba(255, 107, 43, 0.25);
 }
-
 .btn-gradient:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(255, 107, 43, 0.35);
 }
-
 .btn-gradient:active {
   transform: translateY(0);
 }
 
-/* Card styles */
+/* ─── Card Styles ───────────────────────────────────────── */
 .app-card {
   background: var(--bg-card);
-  border-radius: 16px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s ease;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
-.app-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-  border-color: rgba(226, 232, 240, 1);
-}
-
-/* Input Overrides */
-.p-inputtext, .p-inputnumber-input, .p-textarea, .p-select {
+/* ─── Input Overrides ───────────────────────────────────── */
+.p-inputtext,
+.p-inputnumber-input,
+.p-textarea,
+.p-select {
   border-radius: 8px;
   transition: all 0.2s ease;
+  border: 1px solid var(--border);
 }
-
-.p-inputtext:focus, .p-inputnumber-input:focus, .p-textarea:focus, .p-select:focus {
+.p-inputtext:focus,
+.p-inputnumber-input:focus,
+.p-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.08);
 }
 
-/* Toggle override */
+/* Toggle */
 .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
   background: var(--primary) !important;
 }
 
-/* Animations */
+/* ─── Animations ────────────────────────────────────────── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 .fade-in-up {
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
-/* Stagger delays for children */
-.fade-in-up:nth-child(1) { animation-delay: 0.05s; }
-.fade-in-up:nth-child(2) { animation-delay: 0.1s; }
-.fade-in-up:nth-child(3) { animation-delay: 0.15s; }
-.fade-in-up:nth-child(4) { animation-delay: 0.2s; }
+.fade-in-up:nth-child(1) {
+  animation-delay: 0s;
+}
+.fade-in-up:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.fade-in-up:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.fade-in-up:nth-child(4) {
+  animation-delay: 0.18s;
+}
 
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateX(24px);
   }
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
-
 .slide-in-right {
-  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Smooth Tabs */
-.tab-btn {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.tab-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* Responsive overrides */
+/* ─── Responsive ─── Mobile < 768 ───────────────────────── */
 @media (max-width: 768px) {
   .app-card {
     border-radius: 12px;
   }
 
-  /* DataTable horizontal scroll on mobile */
   .p-datatable-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-
   .p-datatable .p-datatable-thead > tr > th,
   .p-datatable .p-datatable-tbody > tr > td {
     white-space: nowrap;
     font-size: 0.75rem;
-    padding: 0.75rem;
+    padding: 10px 12px;
   }
 
-  /* Reduce padding on mobile cards */
-  .p-5 {
-    padding: 16px !important;
+  .filter-bar {
+    flex-direction: column;
+  }
+  .filter-bar > * {
+    width: 100% !important;
+  }
+
+  /* Hide on mobile */
+  .hide-mobile {
+    display: none !important;
   }
 }
 
-/* PrimeVue Dialog responsive */
+/* ─── Tablet 769–1024 ───────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* ─── Dialog mobile ─────────────────────────────────────── */
 @media (max-width: 500px) {
   .p-dialog {
     width: 95vw !important;
     max-width: 95vw !important;
     margin: 0;
-    max-height: 95vh;
   }
-  
   .p-dialog-content {
     padding: 1rem !important;
   }
 }
-

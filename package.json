@@ -1,0 +1,31 @@
+{
+  "name": "saas-platform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev:be": "npm run dev --prefix apps/be",
+    "dev:admin": "npm run dev --prefix apps/fe-admin",
+    "dev:landing": "npm run dev --prefix apps/fe-landing",
+    "dev:store": "npm run dev --prefix apps/fe-store",
+    "dev": "concurrently \"npm:dev:be\" \"npm:dev:admin\" \"npm:dev:landing\" \"npm:dev:store\" --kill-others --prefix-colors \"red,blue,green,yellow\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hngne/saas-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hngne/saas-platform/issues"
+  },
+  "homepage": "https://github.com/hngne/saas-platform#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

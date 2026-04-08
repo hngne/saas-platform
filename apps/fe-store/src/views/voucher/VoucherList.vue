@@ -57,9 +57,12 @@ onMounted(fetchAll)
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <InputText v-model="filter.search" placeholder="Tìm mã voucher..." class="w-64" @keyup.enter="fetchAll" />
-      <Button label="Thêm voucher" icon="pi pi-plus" class="btn-gradient" @click="openCreate" />
+    <p class="page-section-label">QUẢN LÝ VOUCHER</p>
+    <div class="filter-bar mb-5">
+      <InputText v-model="filter.search" placeholder="Tìm mã voucher..." style="width: 220px" @keyup.enter="fetchAll" />
+      <div class="ml-auto">
+        <Button label="Thêm voucher" icon="pi pi-plus" class="btn-primary" @click="openCreate" />
+      </div>
     </div>
 
     <div class="app-card">
@@ -82,12 +85,12 @@ onMounted(fetchAll)
             <span class="font-semibold">{{ data.discount_type === 'PERCENT' ? data.discount_value + '%' : formatVND(data.discount_value) }}</span>
           </template>
         </Column>
-        <Column header="Đã dùng" style="width: 100px; text-align: center">
+        <Column header="Đã dùng" class="hide-mobile" style="width: 100px; text-align: center">
           <template #body="{ data }">
             <span>{{ data.used_count || 0 }} / {{ data.usage_limit || '∞' }}</span>
           </template>
         </Column>
-        <Column header="Hiệu lực" style="width: 180px">
+        <Column header="Hiệu lực" class="hide-mobile" style="width: 180px">
           <template #body="{ data }">
             <span class="text-xs">
               {{ data.start_date ? formatDate(data.start_date) : '—' }} → {{ data.end_date ? formatDate(data.end_date) : '—' }}

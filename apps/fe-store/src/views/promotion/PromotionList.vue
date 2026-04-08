@@ -52,9 +52,12 @@ onMounted(fetchAll)
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <InputText v-model="filter.search" placeholder="Tìm khuyến mãi..." class="w-64" @keyup.enter="fetchAll" />
-      <Button label="Tạo khuyến mãi" icon="pi pi-plus" class="btn-gradient" @click="router.push('/promotions/new')" />
+    <p class="page-section-label">KHUYẾN MÃI</p>
+    <div class="filter-bar mb-5">
+      <InputText v-model="filter.search" placeholder="Tìm khuyến mãi..." style="width: 220px" @keyup.enter="fetchAll" />
+      <div class="ml-auto">
+        <Button label="Tạo khuyến mãi" icon="pi pi-plus" class="btn-primary" @click="router.push('/promotions/new')" />
+      </div>
     </div>
 
     <div class="app-card">
@@ -64,7 +67,7 @@ onMounted(fetchAll)
         <Column header="Tên" field="name" style="min-width: 200px">
           <template #body="{ data }"><span class="font-semibold">{{ data.name }}</span></template>
         </Column>
-        <Column header="Thời gian" style="width: 200px">
+        <Column header="Thời gian" class="hide-mobile" style="width: 200px">
           <template #body="{ data }">
             <span class="text-xs">{{ data.start_date ? formatDate(data.start_date) : '—' }} → {{ data.end_date ? formatDate(data.end_date) : '—' }}</span>
           </template>

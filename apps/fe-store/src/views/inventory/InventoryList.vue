@@ -54,17 +54,16 @@ onMounted(fetchInventory)
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <InputText v-model="filter.search" placeholder="Tìm sản phẩm..." class="w-64" @keyup.enter="fetchInventory" />
-        <div class="flex items-center gap-2">
-          <ToggleSwitch v-model="lowStockOnly" @update:modelValue="fetchInventory" />
-          <span class="text-xs font-semibold" style="color: var(--text-muted)">Sắp hết hàng</span>
-        </div>
+    <p class="page-section-label">QUẢN LÝ KHO HÀNG</p>
+    <div class="filter-bar mb-5">
+      <InputText v-model="filter.search" placeholder="Tìm sản phẩm..." style="width: 220px" @keyup.enter="fetchInventory" />
+      <div class="flex items-center gap-2">
+        <ToggleSwitch v-model="lowStockOnly" @update:modelValue="fetchInventory" />
+        <span class="text-xs font-semibold hide-mobile" style="color: var(--text-muted)">Sắp hết hàng</span>
       </div>
-      <div class="flex gap-2">
-        <Button label="Lịch sử kho" icon="pi pi-history" severity="secondary" outlined @click="router.push('/inventory/logs')" />
-        <Button label="Điều chỉnh kho" icon="pi pi-sliders-h" class="btn-gradient" @click="showAdjust = true" />
+      <div class="ml-auto flex gap-2">
+        <Button label="Lịch sử" icon="pi pi-history" severity="secondary" outlined size="small" @click="router.push('/inventory/logs')" />
+        <Button label="Điều chỉnh" icon="pi pi-sliders-h" class="btn-primary" @click="showAdjust = true" />
       </div>
     </div>
 
@@ -80,7 +79,7 @@ onMounted(fetchInventory)
             </div>
           </template>
         </Column>
-        <Column header="SKU" style="width: 120px">
+        <Column header="SKU" class="hide-mobile" style="width: 120px">
           <template #body="{ data }">{{ data.sku_code || '—' }}</template>
         </Column>
         <Column header="Tồn kho" style="width: 100px; text-align: center">
@@ -90,7 +89,7 @@ onMounted(fetchInventory)
             </span>
           </template>
         </Column>
-        <Column header="Danh mục" style="width: 140px">
+        <Column header="Danh mục" class="hide-mobile" style="width: 140px">
           <template #body="{ data }">{{ data.category_name || '—' }}</template>
         </Column>
       </DataTable>

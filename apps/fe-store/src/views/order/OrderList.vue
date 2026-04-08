@@ -66,8 +66,10 @@ onMounted(async () => {
 
 <template>
   <div>
+    <p class="page-section-label">QUẢN LÝ ĐƠN HÀNG</p>
+
     <!-- Status tabs -->
-    <div class="flex items-center gap-2 mb-5 overflow-x-auto">
+    <div class="tabs-wrap">
       <button
         v-for="tab in tabs"
         :key="tab.label"
@@ -81,38 +83,38 @@ onMounted(async () => {
     </div>
 
     <!-- Search -->
-    <div class="flex items-center justify-between mb-4">
-      <InputText v-model="filter.search" placeholder="Tìm theo tên, SĐT..." class="w-64" @keyup.enter="fetchOrders" />
+    <div class="filter-bar mb-4">
+      <InputText v-model="filter.search" placeholder="Tìm theo tên, SĐT..." class="order-search" @keyup.enter="fetchOrders" />
     </div>
 
     <div class="app-card">
       <DataTable :value="orders" :loading="loading" :paginator="true" :rows="filter.limit" :totalRecords="totalRecords" :lazy="true" @page="onPage" class="text-sm" stripedRows @row-click="viewDetail" style="cursor: pointer">
         <template #empty><EmptyState icon="pi pi-receipt" title="Chưa có đơn hàng" /></template>
 
-        <Column header="Mã đơn" style="width: 130px">
+        <Column header="Mã đơn" style="width: 110px">
           <template #body="{ data }">
             <span class="font-bold text-xs" style="color: var(--primary)">{{ data.order_code || data.id?.slice(0, 8) }}</span>
           </template>
         </Column>
-        <Column header="Khách hàng" style="min-width: 180px">
+        <Column header="Khách hàng" style="min-width: 160px">
           <template #body="{ data }">
             <p class="font-semibold text-sm">{{ data.customer_name || '—' }}</p>
-            <p class="text-xs" style="color: var(--text-muted)">{{ data.customer_phone || '' }}</p>
+            <p class="text-xs hide-mobile" style="color: var(--text-muted)">{{ data.customer_phone || '' }}</p>
           </template>
         </Column>
-        <Column header="Tổng tiền" style="width: 140px">
+        <Column header="Tổng tiền" style="width: 120px">
           <template #body="{ data }"><span class="font-semibold">{{ formatVND(data.total_amount || 0) }}</span></template>
         </Column>
-        <Column header="Đơn hàng" style="width: 110px">
+        <Column header="Trạng thái" style="width: 100px">
           <template #body="{ data }"><StatusBadge :status="data.order_status" /></template>
         </Column>
-        <Column header="Thanh toán" style="width: 120px">
+        <Column header="Thanh toán" class="hide-mobile" style="width: 110px">
           <template #body="{ data }"><StatusBadge :status="data.payment_status" /></template>
         </Column>
-        <Column header="Phương thức" style="width: 90px">
+        <Column header="PT" class="hide-mobile hide-tablet" style="width: 80px">
           <template #body="{ data }"><StatusBadge :status="data.payment_method" /></template>
         </Column>
-        <Column header="Ngày" style="width: 140px">
+        <Column header="Ngày" class="hide-mobile" style="width: 130px">
           <template #body="{ data }">{{ formatDateTime(data.created_at) }}</template>
         </Column>
       </DataTable>
@@ -121,14 +123,45 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.tabs-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
 .tab-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
-  background: #fff; font-size: 0.8rem; font-weight: 500; cursor: pointer;
-  color: var(--text-muted); transition: all 0.2s; white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 .tab-btn:hover { border-color: var(--primary); color: var(--primary); }
 .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.tab-count { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 10px; }
-.tab-btn:not(.active) .tab-count { background: #F3F4F6; }
+.tab-count {
+  font-size: 0.65rem;
+  background: rgba(255,255,255,0.25);
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+.tab-btn:not(.active) .tab-count { background: #F3F4F6; color: var(--text-muted); }
+
+.order-search { width: 240px; }
+@media (max-width: 768px) {
+  .order-search { width: 100% !important; }
+}
 </style>
+

@@ -95,7 +95,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FFF9F5 0%, #FFE8D6 50%, #FFF0E5 100%);
+  background: linear-gradient(160deg, #F8F9FB 0%, #FFF5EE 50%, #F8F9FB 100%);
   position: relative;
   overflow: hidden;
 }
@@ -103,17 +103,17 @@ const handleLogin = async () => {
 .deco {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.15;
+  filter: blur(60px);
 }
 .deco-1 {
-  width: 400px; height: 400px;
-  background: linear-gradient(135deg, #FF6B2B, #FFD700);
-  top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: rgba(255, 107, 43, 0.08);
+  top: -150px; right: -150px;
 }
 .deco-2 {
-  width: 300px; height: 300px;
-  background: linear-gradient(135deg, #FFD700, #FF6B2B);
-  bottom: -80px; left: -80px;
+  width: 350px; height: 350px;
+  background: rgba(255, 107, 43, 0.06);
+  bottom: -120px; left: -120px;
 }
 
 .login-card {
@@ -122,7 +122,7 @@ const handleLogin = async () => {
   padding: 48px 40px;
   width: 420px;
   max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(255, 107, 43, 0.1), 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0,0,0,0.03);
   position: relative;
   z-index: 1;
 }
@@ -133,14 +133,14 @@ const handleLogin = async () => {
 }
 
 .logo-circle {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, #FF6B2B, #FFD700);
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, #FF6B2B, #FF8F5E);
   border-radius: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(255, 107, 43, 0.3);
+  box-shadow: 0 8px 24px rgba(255, 107, 43, 0.25);
 }
 
 .login-title {
@@ -173,4 +173,12 @@ const handleLogin = async () => {
   font-weight: 600;
   color: var(--text-primary);
 }
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+}
 </style>
+

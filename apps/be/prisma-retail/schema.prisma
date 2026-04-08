@@ -24,8 +24,6 @@ model User {
     updated_at DateTime  @updatedAt
     deleted_at DateTime?
 
-    inventory_logs InventoryLog[]
-
     @@index([email])
     @@index([role])
     @@index([status])
@@ -61,6 +59,7 @@ model Customer {
     cart      Cart?
     orders    Order[]
     reviews   Review[]
+    post_comments PostComment[]
 
     @@index([email])
     @@index([status])
@@ -235,7 +234,6 @@ model InventoryLog {
     created_at     DateTime @default(now())
 
     variant ProductVariant @relation(fields: [variant_id], references: [id])
-    user    User?          @relation(fields: [user_id], references: [id])
 
     @@index([variant_id])
     @@index([type])
@@ -285,6 +283,7 @@ model Order {
     customer_id        String    @db.VarChar(36)
     voucher_id         String?   @db.VarChar(36)
     shipping_method_id String?   @db.VarChar(36)
+    pickup_store_id    String?   @db.VarChar(36)
     receiver_name      String?   @db.VarChar(100)
     receiver_phone     String?   @db.VarChar(20)
     shipping_address   String    @db.Text
@@ -303,11 +302,13 @@ model Order {
     customer        Customer        @relation(fields: [customer_id], references: [id])
     voucher         Voucher?        @relation(fields: [voucher_id], references: [id])
     shipping_method ShippingMethod? @relation(fields: [shipping_method_id], references: [id])
+    pickup_store    Store?          @relation(fields: [pickup_store_id], references: [id])
     items           OrderItem[]
     payment         Payment?
     reviews         Review[]
 
     @@index([customer_id])
+    @@index([pickup_store_id])
     @@index([payment_status])
     @@index([order_status])
     @@index([created_at])
@@ -361,6 +362,7 @@ model Payment {
 model ShippingMethod {
     id             String   @id @default(uuid()) @db.VarChar(36)
     name           String   @db.VarChar(100)
+    type           String   @default("DELIVERY") @db.VarChar(20) // DELIVERY | PICKUP
     fee            Decimal  @db.Decimal(18, 2)
     estimated_days Int?
     is_active      Boolean  @default(true)
@@ -478,4 +480,104 @@ model Notification {
     @@index([is_read])
     @@index([created_at])
     @@map("notifications")
+}
+
+// ========================
+// STORES (PICKUP)
+// ========================
+
+model Store {
+    id          String   @id @default(uuid()) @db.VarChar(36)
+    name        String   @db.VarChar(200)
+    address     String   @db.Text
+    province    String?  @db.VarChar(100)
+    district    String?  @db.VarChar(100)
+    ward        String?  @db.VarChar(100)
+    phone       String?  @db.VarChar(20)
+    latitude    Decimal? @db.Decimal(10, 7) // GPS
+    longitude   Decimal? @db.Decimal(10, 7) // GPS
+    open_time   String?  @db.VarChar(10)
+    close_time  String?  @db.VarChar(10)
+    is_active   Boolean  @default(true)
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+    
+    orders      Order[]
+
+    @@index([is_active])
+    @@index([province])
+    @@map("stores")
+}
+
+// ========================
+// BLOG (CMS)
+// ========================
+
+model BlogCategory {
+    id          String   @id @default(uuid()) @db.VarChar(36)
+    name        String   @db.VarChar(100)
+    slug        String   @unique @db.VarChar(100)
+    is_active   Boolean  @default(true)
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+    
+    posts       Post[]
+
+    @@index([slug])
+    @@index([is_active])
+    @@map("blog_categories")
+}
+
+model Post {
+    id                 String   @id @default(uuid()) @db.VarChar(36)
+    blog_category_id   String?  @db.VarChar(36)
+    user_id            String   @db.VarChar(36) // Tác giả
+    title              String   @db.VarChar(200)
+    slug               String   @unique @db.VarChar(200)
+    thumbnail_url      String?  @db.VarChar(255)
+    content            String   @db.LongText
+    status             String   @default("DRAFT") @db.VarChar(20) // DRAFT | PUBLISHED
+    view_count         Int      @default(0)
+    published_at       DateTime?
+    created_at         DateTime @default(now())
+    updated_at         DateTime @updatedAt
+    deleted_at         DateTime?
+    
+    category    BlogCategory? @relation(fields: [blog_category_id], references: [id])
+    tags        PostTag[]
+    comments    PostComment[]
+
+    @@index([blog_category_id])
+    @@index([status])
+    @@index([slug])
+    @@map("posts")
+}
+
+model PostTag {
+    id          String   @id @default(uuid()) @db.VarChar(36)
+    post_id     String   @db.VarChar(36)
+    tag         String   @db.VarChar(50)
+    
+    post        Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+
+    @@index([post_id])
+    @@index([tag])
+    @@map("post_tags")
+}
+
+model PostComment {
+    id          String   @id @default(uuid()) @db.VarChar(36)
+    post_id     String   @db.VarChar(36)
+    customer_id String   @db.VarChar(36)
+    content     String   @db.Text
+    parent_id   String?  @db.VarChar(36)
+    is_visible  Boolean  @default(true)
+    created_at  DateTime @default(now())
+    
+    post        Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+    customer    Customer @relation(fields: [customer_id], references: [id])
+
+    @@index([post_id])
+    @@index([customer_id])
+    @@map("post_comments")
 }

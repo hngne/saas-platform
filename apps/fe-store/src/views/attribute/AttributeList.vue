@@ -143,9 +143,10 @@ onMounted(fetchAttributes)
 
 <template>
   <div>
+    <p class="page-section-label">THUỘC TÍNH SẢN PHẨM</p>
     <div class="flex items-center justify-between mb-5">
-      <h3 class="text-lg font-bold" style="color: var(--text-primary)">Quản lý thuộc tính</h3>
-      <Button label="Thêm thuộc tính" icon="pi pi-plus" class="btn-gradient" @click="openCreate" />
+      <h3 class="text-base font-bold" style="color: var(--text-primary)">Quản lý thuộc tính</h3>
+      <Button label="Thêm thuộc tính" icon="pi pi-plus" class="btn-primary" @click="openCreate" />
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">

@@ -58,14 +58,13 @@ onMounted(fetchLogs)
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="router.push('/inventory')" />
-        <h3 class="text-lg font-bold" style="color: var(--text-primary)">Lịch sử kho</h3>
-      </div>
-      <div class="flex items-center gap-3">
-        <Select v-model="typeFilter" :options="typeOptions" optionLabel="label" optionValue="value" placeholder="Loại" showClear class="w-36" @change="fetchLogs" />
-        <DatePicker v-model="dateRange" selectionMode="range" placeholder="Khoảng ngày" dateFormat="dd/mm/yy" showIcon class="w-60" @date-select="fetchLogs" />
+    <p class="page-section-label">LỊCH SỬ KHO</p>
+    <div class="filter-bar mb-5">
+      <Button icon="pi pi-arrow-left" text rounded @click="router.push('/inventory')" />
+      <h3 class="text-base font-bold" style="color: var(--text-primary)">Lịch sử kho</h3>
+      <div class="ml-auto flex items-center gap-3">
+        <Select v-model="typeFilter" :options="typeOptions" optionLabel="label" optionValue="value" placeholder="Loại" showClear style="width: 120px" @change="fetchLogs" />
+        <DatePicker v-model="dateRange" selectionMode="range" placeholder="Khoảng ngày" dateFormat="dd/mm/yy" showIcon class="hide-mobile" style="width: 220px" @date-select="fetchLogs" />
       </div>
     </div>
 
@@ -73,7 +72,7 @@ onMounted(fetchLogs)
       <DataTable :value="logs" :loading="loading" :paginator="true" :rows="filter.limit" :totalRecords="totalRecords" :lazy="true" @page="onPage" class="text-sm" stripedRows>
         <template #empty><EmptyState icon="pi pi-history" title="Chưa có lịch sử" /></template>
 
-        <Column header="Ngày" style="width: 150px">
+        <Column header="Ngày" class="hide-mobile" style="width: 140px">
           <template #body="{ data }">{{ formatDateTime(data.created_at) }}</template>
         </Column>
         <Column header="Sản phẩm">
@@ -92,7 +91,7 @@ onMounted(fetchLogs)
             </span>
           </template>
         </Column>
-        <Column header="Ghi chú" style="min-width: 150px">
+        <Column header="Ghi chú" class="hide-mobile" style="min-width: 150px">
           <template #body="{ data }">{{ data.note || '—' }}</template>
         </Column>
       </DataTable>

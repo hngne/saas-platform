@@ -216,7 +216,7 @@ const onSubmit = async () => {
     })
     
     const slug = response.data.data.tenant.slug
-    window.location.href = `http://${slug}.localhost:3001/dashboard`
+    window.location.href = `http://${slug}.localhost:3002/dashboard`
     
   } catch (error: any) {
     globalError.value = error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.'

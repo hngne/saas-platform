@@ -6,6 +6,7 @@ const authStore = useAuthStore()
 
 <template>
   <div class="max-w-2xl">
+    <p class="page-section-label">CÀI ĐẶT CỬA HÀNG</p>
     <div class="app-card p-6 fade-in-up">
       <div class="flex items-center gap-4 mb-6">
         <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #FF6B2B, #FFD700)">
