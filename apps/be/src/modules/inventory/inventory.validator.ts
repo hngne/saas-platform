@@ -2,9 +2,25 @@ import { z } from "zod";
 
 export const adjustInventorySchema = z.object({
   variant_id: z.string().uuid("variant_id không hợp lệ"),
-  type: z.enum(["IN", "OUT", "ADJUST"]),
-  quantity: z.number().int().positive("Số lượng phải lớn hơn 0"),
+  type: z.enum(["IN", "OUT", "ADJUST", "RETURN"]),
+  quantity: z.number().int(),
   note: z.string().optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (["IN", "OUT", "RETURN"].includes(data.type) && data.quantity <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["quantity"],
+      message: "Số lượng phải lớn hơn 0",
+    });
+  }
+
+  if (data.type === "ADJUST" && data.quantity < 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["quantity"],
+      message: "Số lượng điều chỉnh không được âm",
+    });
+  }
 });
 
 export const inventoryFilterSchema = z.object({

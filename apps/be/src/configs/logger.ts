@@ -3,9 +3,22 @@ import DailyRotateFile from "winston-daily-rotate-file";
 
 const { combine, timestamp, printf, colorize, errors } = winston.format;
 
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level}]: ${stack || message}`;
-});
+/**
+ * Format log rõ ràng:
+ * [2026-04-19 10:05:23] [INFO]  [shopqa] [USER:abc123] POST /api/products — Tạo sản phẩm thành công
+ * [2026-04-19 10:05:24] [ERROR] [unknown] [anonymous] GET /api/xxx — TypeError: Cannot read...
+ *   at Object.<anonymous> (/src/modules/product/product.service.ts:42:15)
+ */
+const logFormat = printf(
+  ({ level, message, timestamp, stack, tenant, userId, userType }) => {
+    const tenantTag = tenant || "system";
+    const userTag = userId ? `${userType || "?"}:${userId}` : "anonymous";
+    // Tùy chỉnh `level` an toàn hơn (bỏ toUpperCase để không hỏng ANSI codes của colorize)
+    const output = `[${timestamp || ""}] [${level}] [${tenantTag}] [${userTag}] ${message}`;
+    if (stack) return `${output}\n  ${stack}`;
+    return output;
+  },
+);
 
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === "production" ? "warn" : "debug",

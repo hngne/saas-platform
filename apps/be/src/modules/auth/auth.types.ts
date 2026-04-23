@@ -32,7 +32,8 @@ export interface UserLoginResponse {
   tenant: {
     id: string;
     slug: string;
-    businessType: string;
+    store_name: string | null;
+    business_type: string;
   };
   tokens: AuthTokens;
 }
@@ -48,6 +49,7 @@ export interface MerchantRegisterResponse {
     id: string;
     slug: string;
     store_name: string | null;
+    business_type: string;
   };
   tokens: AuthTokens;
 }

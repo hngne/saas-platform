@@ -1,4 +1,5 @@
 import { PrismaClient as RetailClient } from "../../../generated/retail-client";
+import { getCategoryScopeIds } from "@/shared/utils/category.util";
 import { removeVietnameseTones } from "@/shared/utils/string.util";
 import { buildPaginationMeta } from "@/shared/utils/pagination.util";
 import {
@@ -11,6 +12,36 @@ import {
 
 export class ProductRepository {
   constructor(private db: RetailClient) {}
+
+  private async withReviewStats<T extends { id: string }>(products: T[]): Promise<Array<T & { rating_avg: number; review_count: number }>> {
+    if (!products.length) return [];
+
+    const productIds = products.map((product) => product.id);
+    const stats = await this.db.review.groupBy({
+      by: ["product_id"],
+      where: {
+        product_id: { in: productIds },
+        is_visible: true,
+      },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+    const statsByProductId = new Map(
+      stats.map((item) => [
+        item.product_id,
+        {
+          rating_avg: Number((item._avg.rating || 0).toFixed(1)),
+          review_count: item._count._all,
+        },
+      ]),
+    );
+
+    return products.map((product) => ({
+      ...product,
+      rating_avg: statsByProductId.get(product.id)?.rating_avg || 0,
+      review_count: statsByProductId.get(product.id)?.review_count || 0,
+    }));
+  }
 
   async findAll(filter: ProductFilterDto) {
     const {
@@ -26,11 +57,13 @@ export class ProductRepository {
       sort_order,
     } = filter;
 
+    const categoryIds = await getCategoryScopeIds(this.db, category_id);
+
     const where: any = {
       deleted_at: null,
       ...(is_active !== undefined && { is_active }),
       ...(has_variant !== undefined && { has_variant }),
-      ...(category_id && { category_id }),
+      ...(categoryIds.length && { category_id: { in: categoryIds } }),
       ...(min_price !== undefined && { base_price: { gte: min_price } }),
       ...(max_price !== undefined && {
         base_price: {
@@ -63,11 +96,11 @@ export class ProductRepository {
       this.db.product.count({ where }),
     ]);
 
-    return { data, meta: buildPaginationMeta(total, page, limit) };
+    return { data: await this.withReviewStats(data), meta: buildPaginationMeta(total, page, limit) };
   }
 
   async findById(id: string) {
-    return this.db.product.findFirst({
+    const product = await this.db.product.findFirst({
       where: { id, deleted_at: null },
       include: {
         category: true,
@@ -85,6 +118,34 @@ export class ProductRepository {
         },
       },
     });
+    if (!product) return product;
+    return (await this.withReviewStats([product]))[0];
+  }
+
+  async findByIdentifier(identifier: string) {
+    const product = await this.db.product.findFirst({
+      where: {
+        deleted_at: null,
+        OR: [{ id: identifier }, { slug: identifier }],
+      },
+      include: {
+        category: true,
+        images: { orderBy: { sort_order: "asc" } },
+        variants: {
+          include: {
+            variant_values: {
+              include: {
+                attribute_value: {
+                  include: { attribute: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!product) return product;
+    return (await this.withReviewStats([product]))[0];
   }
 
   async findBySlug(slug: string) {
@@ -123,12 +184,12 @@ export class ProductRepository {
     });
   }
 
-  async createImages(productId: string, urls: string[]) {
+  async createImages(productId: string, urls: string[], startSortOrder = 0) {
     return this.db.productImage.createMany({
       data: urls.map((url, index) => ({
         product_id: productId,
         url,
-        sort_order: index,
+        sort_order: startSortOrder + index,
       })),
     });
   }
@@ -195,8 +256,35 @@ export class ProductRepository {
     });
   }
 
-  async updateVariant(id: string, dto: UpdateVariantDto) {
-    return this.db.productVariant.update({ where: { id }, data: dto });
+  async updateVariant(
+    id: string,
+    dto: UpdateVariantDto & { attribute_value_ids?: string[] },
+  ) {
+    const { attribute_value_ids, ...data } = dto;
+
+    return this.db.productVariant.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(attribute_value_ids
+          ? {
+              variant_values: {
+                deleteMany: {},
+                create: attribute_value_ids.map((valueId) => ({
+                  attribute_value_id: valueId,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        variant_values: {
+          include: {
+            attribute_value: { include: { attribute: true } },
+          },
+        },
+      },
+    });
   }
 
   async deleteVariant(id: string) {
@@ -225,6 +313,10 @@ export class ProductRepository {
 
   async findImageById(id: string) {
     return this.db.productImage.findUnique({ where: { id } });
+  }
+
+  async countImages(productId: string) {
+    return this.db.productImage.count({ where: { product_id: productId } });
   }
 
   async deleteImage(id: string) {

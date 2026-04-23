@@ -52,12 +52,17 @@ onMounted(fetchAll)
 
 <template>
   <div>
-    <p class="page-section-label">KHUYẾN MÃI</p>
+    <section class="page-header">
+      <div>
+        <h1 class="page-title">Quản lý khuyến mãi</h1>
+        <p class="page-subtitle">Theo dõi campaign, thời gian chạy, sản phẩm áp dụng và trạng thái hiển thị tại storefront.</p>
+      </div>
+
+      <Button label="Tạo khuyến mãi" icon="pi pi-plus" class="btn-create-unified" @click="router.push('/promotions/new')" />
+    </section>
+
     <div class="filter-bar mb-5">
       <InputText v-model="filter.search" placeholder="Tìm khuyến mãi..." style="width: 220px" @keyup.enter="fetchAll" />
-      <div class="ml-auto">
-        <Button label="Tạo khuyến mãi" icon="pi pi-plus" class="btn-primary" @click="router.push('/promotions/new')" />
-      </div>
     </div>
 
     <div class="app-card">

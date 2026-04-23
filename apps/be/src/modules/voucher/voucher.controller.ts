@@ -58,4 +58,10 @@ export class VoucherController {
       .status(200)
       .json(APIResponse.OK("Cập nhật trạng thái voucher thành công"));
   };
+  getSummary = async (req: Request, res: Response) => {
+    const data = await this.getService(req).getSummary();
+    res
+      .status(200)
+      .json(APIResponse.OK("Lay tong quan voucher thanh cong", data));
+  };
 }

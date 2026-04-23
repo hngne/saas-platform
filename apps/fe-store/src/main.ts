@@ -7,7 +7,7 @@ import ConfirmationService from 'primevue/confirmationservice'
 import VueApexCharts from 'vue3-apexcharts'
 
 import App from './App.vue'
-import router from './router'
+import router from './router/app-router'
 import './style.css'
 
 const app = createApp(App)

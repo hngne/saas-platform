@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
+import { nextTick, ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import AppSidebar from '@/components/layout/AppSidebarModern.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 
+const route = useRoute()
+const mainContentRef = ref<HTMLElement | null>(null)
 const sidebarOpen = ref(false)
 const isTablet = ref(false)
 const isMobile = ref(false)
@@ -21,6 +24,14 @@ const closeSidebar = () => {
   sidebarOpen.value = false
 }
 
+watch(
+  () => route.fullPath,
+  async () => {
+    await nextTick()
+    mainContentRef.value?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  },
+)
+
 onMounted(() => {
   checkScreen()
   window.addEventListener('resize', checkScreen)
@@ -35,7 +46,7 @@ onUnmounted(() => {
     <!-- Mobile overlay -->
     <Transition name="overlay">
       <div
-        v-if="sidebarOpen && isMobile"
+        v-if="sidebarOpen && (isMobile || isTablet)"
         class="sidebar-overlay"
         @click="closeSidebar"
       ></div>
@@ -47,7 +58,8 @@ onUnmounted(() => {
       :class="{
         'is-mobile': isMobile,
         'is-tablet': isTablet,
-        'mobile-open': sidebarOpen && isMobile
+        'mobile-open': sidebarOpen && isMobile,
+        'tablet-open': sidebarOpen && isTablet
       }"
     >
       <AppSidebar :collapsed="isTablet && !sidebarOpen" @navigate="closeSidebar" />
@@ -60,7 +72,7 @@ onUnmounted(() => {
         @toggle-sidebar="toggleSidebar"
       />
 
-      <main class="main-content">
+      <main ref="mainContentRef" class="main-content">
         <RouterView v-slot="{ Component }">
           <Transition name="page" mode="out-in">
             <component :is="Component" />
@@ -102,6 +114,12 @@ onUnmounted(() => {
   width: var(--sidebar-collapsed);
 }
 
+.sidebar-container.is-tablet.tablet-open {
+  width: var(--sidebar-width);
+  position: relative;
+  z-index: 45;
+}
+
 /* Overlay */
 .sidebar-overlay {
   position: fixed;
@@ -123,7 +141,7 @@ onUnmounted(() => {
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 28px;
+  padding: 24px;
   background-color: var(--bg-page);
 }
 
@@ -132,6 +150,10 @@ onUnmounted(() => {
 }
 @media (min-width: 769px) and (max-width: 1024px) {
   .main-content { padding: 20px; }
+
+  .sidebar-container.is-tablet.tablet-open {
+    box-shadow: 18px 0 38px rgba(15, 23, 42, 0.12);
+  }
 }
 
 /* ── Transitions ─────────────────── */

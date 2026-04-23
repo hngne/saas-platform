@@ -35,150 +35,408 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-page">
-    <!-- Decorative shapes -->
-    <div class="deco deco-1"></div>
-    <div class="deco deco-2"></div>
-
-    <div class="login-card fade-in-up">
-      <!-- Logo -->
-      <div class="login-logo">
-        <div class="logo-circle">
-          <i class="pi pi-shopping-bag" style="font-size: 1.8rem; color: #fff"></i>
+  <div class="merchant-login-page">
+    <aside class="merchant-brand-panel" aria-hidden="true">
+      <div class="merchant-brand-panel__pattern"></div>
+      <div class="merchant-brand-panel__content">
+        <div class="merchant-brand-mark">
+          <div class="merchant-brand-icon">
+            <i class="pi pi-shopping-bag"></i>
+          </div>
+          <div>
+            <strong>ShopFlow</strong>
+            <span>Merchant CMS</span>
+          </div>
         </div>
-        <h1 class="login-title">ShopFlow</h1>
-        <p class="login-subtitle">Đăng nhập vào hệ thống quản lý cửa hàng</p>
+
+        <div class="merchant-brand-copy">
+          <h1>Quản lý cửa hàng trong một màn hình đăng nhập gọn gàng hơn.</h1>
+          <p>Đăng nhập để tiếp tục theo dõi đơn hàng, sản phẩm, khách hàng và vận hành cửa hàng của bạn.</p>
+        </div>
+
+        <article class="merchant-brand-quote">
+          <div class="merchant-brand-quote__avatar">S</div>
+          <div>
+            <strong>"Tối ưu vận hành chỉ trong vài phút cấu hình."</strong>
+            <span>ShopFlow Merchant Platform</span>
+          </div>
+        </article>
       </div>
+    </aside>
 
-      <!-- Form -->
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="field">
-          <label for="email">Email</label>
-          <InputText
-            id="email"
-            v-model="email"
-            placeholder="merchant@email.com"
-            class="w-full"
-            :disabled="loading"
-          />
+    <main class="merchant-login-panel">
+      <section class="merchant-login-card fade-in-up">
+        <div class="merchant-login-header">
+          <div class="merchant-login-badge">Merchant login</div>
+          <h2>Chào mừng trở lại!</h2>
+          <p>Vui lòng đăng nhập để tiếp tục quản lý hệ thống.</p>
         </div>
 
-        <div class="field">
-          <label for="password">Mật khẩu</label>
-          <Password
-            id="password"
-            v-model="password"
-            placeholder="••••••••"
-            :feedback="false"
-            toggleMask
-            class="w-full"
-            inputClass="w-full"
-            :disabled="loading"
-          />
-        </div>
+        <form @submit.prevent="handleLogin" class="merchant-login-form">
+          <div class="field">
+            <label for="email">Địa chỉ email</label>
+            <span class="field-shell">
+              <i class="pi pi-envelope"></i>
+              <InputText
+                id="email"
+                v-model="email"
+                placeholder="merchant@email.com"
+                class="w-full"
+                :disabled="loading"
+              />
+            </span>
+          </div>
 
-        <Button
-          type="submit"
-          label="Đăng nhập"
-          class="btn-gradient w-full mt-2"
-          :loading="loading"
-          style="height: 44px; border-radius: 10px; font-size: 0.95rem"
-        />
-      </form>
-    </div>
+          <div class="field">
+            <div class="field-topline">
+              <label for="password">Mật khẩu</label>
+              <a href="#" @click.prevent>Quên mật khẩu?</a>
+            </div>
+            <span class="field-shell">
+              <i class="pi pi-lock"></i>
+              <Password
+                id="password"
+                v-model="password"
+                placeholder="••••••••"
+                :feedback="false"
+                toggleMask
+                class="w-full"
+                inputClass="w-full"
+                :disabled="loading"
+              />
+            </span>
+          </div>
+
+          <Button
+            type="submit"
+            label="Đăng nhập"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            class="merchant-submit w-full"
+            :loading="loading"
+          />
+        </form>
+
+        <footer class="merchant-login-footer">shopflow-admin.localhost:3002</footer>
+      </section>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.login-page {
+.merchant-login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.86fr) minmax(560px, 1.14fr);
+  background: #f7f7fb;
+}
+
+.merchant-brand-panel {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ff8426 0%, #ffb31f 58%, #ffd44c 100%);
+  color: #fff;
+}
+
+.merchant-brand-panel__pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.3px, transparent 1.3px);
+  background-size: 30px 30px;
+}
+
+.merchant-brand-panel__content {
+  position: relative;
+  min-height: 100vh;
+  padding: 56px clamp(28px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+}
+
+.merchant-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.merchant-brand-icon {
+  width: 82px;
+  height: 82px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #a33b00;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 34px rgba(138, 57, 0, 0.18);
+}
+
+.merchant-brand-icon i {
+  font-size: 1.8rem;
+}
+
+.merchant-brand-mark strong,
+.merchant-brand-mark span {
+  display: block;
+}
+
+.merchant-brand-mark strong {
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.merchant-brand-mark span {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.merchant-brand-copy h1 {
+  margin: 0;
+  max-width: 540px;
+  font-size: clamp(42px, 6vw, 66px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+}
+
+.merchant-brand-copy p {
+  max-width: 500px;
+  margin: 18px 0 0;
+  font-size: 18px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.merchant-brand-quote {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 16px;
+  max-width: 480px;
+  padding: 24px 26px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(14px);
+}
+
+.merchant-brand-quote__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #b34700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.merchant-brand-quote strong,
+.merchant-brand-quote span {
+  display: block;
+}
+
+.merchant-brand-quote strong {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.merchant-brand-quote span {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.merchant-login-panel {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #F8F9FB 0%, #FFF5EE 50%, #F8F9FB 100%);
-  position: relative;
-  overflow: hidden;
+  padding: 36px 28px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(248, 249, 255, 1) 48%),
+    #f7f7fb;
 }
 
-.deco {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-}
-.deco-1 {
-  width: 500px; height: 500px;
-  background: rgba(255, 107, 43, 0.08);
-  top: -150px; right: -150px;
-}
-.deco-2 {
-  width: 350px; height: 350px;
-  background: rgba(255, 107, 43, 0.06);
-  bottom: -120px; left: -120px;
+.merchant-login-card {
+  width: min(528px, 100%);
 }
 
-.login-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 48px 40px;
-  width: 420px;
-  max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0,0,0,0.03);
-  position: relative;
-  z-index: 1;
+.merchant-login-header {
+  margin-bottom: 30px;
 }
 
-.login-logo {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.logo-circle {
-  width: 60px; height: 60px;
-  background: linear-gradient(135deg, #FF6B2B, #FF8F5E);
-  border-radius: 16px;
+.merchant-login-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(255, 107, 43, 0.25);
-}
-
-.login-title {
-  font-size: 1.5rem;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff2e8;
+  color: #d45a12;
+  font-size: 12px;
   font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.login-subtitle {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-top: 6px;
+.merchant-login-header h2 {
+  margin: 18px 0 0;
+  font-size: clamp(40px, 4.4vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  color: #0f172a;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.merchant-login-header p {
+  margin: 14px 0 0;
+  color: #5b6474;
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.merchant-login-form {
+  display: grid;
+  gap: 20px;
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  gap: 10px;
 }
 
 .field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  color: #3b2a24;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-@media (max-width: 480px) {
-  .login-card {
-    padding: 32px 24px;
+.field-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field-topline a {
+  color: #bf3f0b;
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field-shell {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 14px;
+  min-height: 68px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background: #eef1fb;
+  border: 1px solid transparent;
+}
+
+.field-shell:focus-within {
+  border-color: rgba(220, 106, 22, 0.38);
+  box-shadow: 0 0 0 4px rgba(255, 136, 43, 0.08);
+}
+
+.field-shell > i {
+  color: #8b6d5f;
+}
+
+.field-shell :deep(.p-inputtext),
+.field-shell :deep(.p-password),
+.field-shell :deep(.p-password-input) {
+  width: 100%;
+}
+
+.field-shell :deep(.p-inputtext),
+.field-shell :deep(.p-password-input) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  color: #1f2937;
+  font-size: 17px;
+}
+
+.field-shell :deep(.p-password) {
+  display: flex;
+  align-items: center;
+}
+
+.field-shell :deep(.p-password-toggle-mask-icon) {
+  color: #8b6d5f;
+}
+
+.merchant-submit {
+  height: 72px;
+  margin-top: 8px;
+  border: none !important;
+  border-radius: 18px !important;
+  background: linear-gradient(90deg, #ff7127 0%, #ffcb0d 100%) !important;
+  box-shadow: 0 18px 28px rgba(255, 144, 32, 0.24);
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+
+.merchant-login-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e4e7f0;
+  text-align: center;
+  color: #b4a39b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 980px) {
+  .merchant-login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-brand-panel {
+    display: none;
+  }
+
+  .merchant-login-panel {
+    padding: 48px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .merchant-login-header h2 {
+    font-size: 34px;
+  }
+
+  .merchant-login-header p {
+    font-size: 16px;
+  }
+
+  .field-shell {
+    min-height: 60px;
+    padding: 0 16px;
     border-radius: 16px;
+  }
+
+  .merchant-submit {
+    height: 64px;
+    border-radius: 16px !important;
   }
 }
 </style>
-

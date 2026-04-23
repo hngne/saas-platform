@@ -32,23 +32,33 @@ export class DashboardRepository {
         where: { order_status: "PENDING", deleted_at: null },
       }),
       this.db.order.aggregate({
-        where: { order_status: "DELIVERED", deleted_at: null },
+        where: {
+          payment_status: "PAID",
+          order_status: { not: "CANCELLED" },
+          deleted_at: null,
+        },
         _sum: { total: true },
       }),
       this.db.order.aggregate({
         where: {
-          order_status: "DELIVERED",
+          payment_status: "PAID",
+          order_status: { not: "CANCELLED" },
           deleted_at: null,
           created_at: { gte: today, lt: tomorrow },
         },
         _sum: { total: true },
       }),
       this.db.product.count({ where: { deleted_at: null, is_active: true } }),
-      this.db.productVariant.count({
+      this.db.product.count({
         where: {
-          stock: { lte: 5 },
           is_active: true,
-          product: { deleted_at: null },
+          deleted_at: null,
+          variants: {
+            some: {
+              stock: { lte: 5 },
+              is_active: true,
+            },
+          },
         },
       }),
       this.db.customer.count({ where: { deleted_at: null } }),
@@ -82,7 +92,8 @@ export class DashboardRepository {
 
     const orders = await this.db.order.findMany({
       where: {
-        order_status: "DELIVERED",
+        payment_status: "PAID",
+        order_status: { not: "CANCELLED" },
         deleted_at: null,
         created_at: { gte: from, lte: to },
       },
@@ -128,10 +139,11 @@ export class DashboardRepository {
 
     const orderItems = await this.db.orderItem.findMany({
       where: {
-        order: { 
-          order_status: "DELIVERED", 
+        order: {
+          payment_status: "PAID",
+          order_status: { not: "CANCELLED" },
           deleted_at: null,
-          created_at: { gte: from, lte: to }
+          created_at: { gte: from, lte: to },
         },
       },
       include: {
@@ -190,12 +202,13 @@ export class DashboardRepository {
     const to = filter.to ?? new Date();
 
     const soldProductIds = await this.db.orderItem.findMany({
-      where: { 
-        order: { 
-          order_status: "DELIVERED", 
+      where: {
+        order: {
+          payment_status: "PAID",
+          order_status: { not: "CANCELLED" },
           deleted_at: null,
-          created_at: { gte: from, lte: to } 
-        } 
+          created_at: { gte: from, lte: to },
+        },
       },
       select: { variant: { select: { product_id: true } } },
       distinct: ["variant_id"],
@@ -205,7 +218,7 @@ export class DashboardRepository {
       ...new Set(soldProductIds.map((i) => i.variant.product_id)),
     ];
 
-    return this.db.product.findMany({
+    const products = await this.db.product.findMany({
       where: {
         deleted_at: null,
         is_active: true,
@@ -221,6 +234,69 @@ export class DashboardRepository {
         },
       },
       take: filter.top,
+    });
+
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      product_id: product.id,
+      product_name: product.name,
+      image_url: product.images[0]?.url ?? null,
+      total_sold: 0,
+      total_revenue: 0,
+      totalStock: product.variants.reduce((sum, variant) => sum + variant.stock, 0),
+      stock: product.variants.reduce((sum, variant) => sum + variant.stock, 0),
+      base_price: product.base_price,
+    }));
+  }
+
+  // ── Phân bố trạng thái đơn hàng (Donut chart) ──────
+  async getOrderStatusDistribution() {
+    const statuses = [
+      "PENDING",
+      "PROCESSING",
+      "SHIPPED",
+      "DELIVERED",
+      "COMPLETED",
+      "CANCELLED",
+    ] as const;
+
+    const counts = await Promise.all(
+      statuses.map((status) =>
+        this.db.order.count({
+          where: { order_status: status, deleted_at: null },
+        }),
+      ),
+    );
+
+    const total = counts.reduce((s, c) => s + c, 0);
+
+    return {
+      total,
+      breakdown: statuses.map((status, i) => ({
+        status,
+        count: counts[i],
+        percentage: total > 0 ? Math.round((counts[i] / total) * 100) : 0,
+      })),
+    };
+  }
+
+  // ── Đơn hàng gần đây (Recent Transactions) ─────────
+  async getRecentOrders(limit = 5) {
+    return this.db.order.findMany({
+      where: { deleted_at: null },
+      orderBy: { created_at: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        receiver_name: true,
+        total: true,
+        order_status: true,
+        created_at: true,
+        customer: {
+          select: { id: true, name: true, email: true },
+        },
+      },
     });
   }
 

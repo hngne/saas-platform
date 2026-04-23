@@ -62,12 +62,14 @@ export const voucherFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().optional(),
   discount_type: z.enum(["FIXED", "PERCENT"]).optional(),
+  status: z.enum(["ACTIVE", "EXPIRED", "UPCOMING", "INACTIVE"]).optional(),
   is_active: z
     .enum(["true", "false"])
     .transform((v) => v === "true")
     .optional(),
   date_from: z.coerce.date().optional(),
   date_to: z.coerce.date().optional(),
+  sort_order: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export const toggleActiveSchema = z.object({

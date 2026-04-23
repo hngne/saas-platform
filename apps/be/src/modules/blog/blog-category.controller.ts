@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { BlogCategoryService } from "./blog-category.service";
 import { getTenantDB } from "@/configs/tenant-db";
 import { APIResponse } from "@/shared/utils/response.util";
+import { CacheService } from "@/configs/cache.service";
+
+const cache = new CacheService();
 import { toggleActiveSchema } from "./blog-category.validator";
 
 export class BlogCategoryController {
@@ -26,6 +29,8 @@ export class BlogCategoryController {
 
   create = async (req: Request, res: Response) => {
     const data = await this.getService(req).create(req.body);
+    await cache.delPattern(`blog-categories:${req.user!.tenantId!}:*`);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res
       .status(201)
       .json(APIResponse.Created("Tạo danh mục blog thành công", data));
@@ -33,6 +38,8 @@ export class BlogCategoryController {
 
   update = async (req: Request, res: Response) => {
     const data = await this.getService(req).update(req.params.id as string, req.body);
+    await cache.delPattern(`blog-categories:${req.user!.tenantId!}:*`);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res
       .status(200)
       .json(APIResponse.OK("Cập nhật danh mục blog thành công", data));
@@ -40,12 +47,16 @@ export class BlogCategoryController {
 
   delete = async (req: Request, res: Response) => {
     await this.getService(req).delete(req.params.id as string);
+    await cache.delPattern(`blog-categories:${req.user!.tenantId!}:*`);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Xóa danh mục blog thành công"));
   };
 
   toggleActive = async (req: Request, res: Response) => {
     const { is_active } = toggleActiveSchema.parse(req.body);
     await this.getService(req).toggleActive(req.params.id as string, is_active);
+    await cache.delPattern(`blog-categories:${req.user!.tenantId!}:*`);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Cập nhật trạng thái thành công"));
   };
 }

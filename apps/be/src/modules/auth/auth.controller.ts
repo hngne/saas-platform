@@ -1,16 +1,26 @@
-import { Request, Response } from "express";
+import { CookieOptions, Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { APIResponse } from "@/shared/utils/response.util";
+import { env } from "@/configs/env";
+import { LogService } from "@/shared/services/log.service";
+import logger from "@/configs/logger";
 
 const service = new AuthService();
+const isProduction = env.NODE_ENV === "production";
+const refreshCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 export class AuthController {
   adminlogin = async (req: Request, res: Response) => {
     const result = await service.adminLogin(req.body);
-    res.cookie("refreshToken", result.tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+    res.cookie("refreshToken", result.tokens.refreshToken, refreshCookieOptions);
+    logger.info(`POST ${req.originalUrl} — Admin đăng nhập: ${req.body.email}`, {
+      tenant: "platform", userId: result.admin.id, userType: "ADMIN",
     });
     res.status(200).json(
       APIResponse.OK("Đăng nhập thành công", {
@@ -37,7 +47,7 @@ export class AuthController {
     if (refreshToken) {
       await service.adminLogout(refreshToken);
     }
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshCookieOptions);
     res.status(200).json(APIResponse.OK("Đăng xuất thành công"));
   };
 
@@ -50,12 +60,7 @@ export class AuthController {
       return;
     }
     const tokens = await service.refreshToken(refreshToken);
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", tokens.refreshToken, refreshCookieOptions);
     res.status(200).json(
       APIResponse.OK("Làm mới token thành công", {
         accessToken: tokens.accessToken,
@@ -65,12 +70,7 @@ export class AuthController {
 
   merchantRegister = async (req: Request, res: Response) => {
     const result = await service.merchantRegister(req.body);
-    res.cookie("refreshToken", result.tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("refreshToken", result.tokens.refreshToken, refreshCookieOptions);
     res.status(201).json(
       APIResponse.Created("Đăng ký cửa hàng thành công", {
         user: result.user,
@@ -89,12 +89,11 @@ export class AuthController {
       tenant.slug,
       tenant.business_type,
     );
-    res.cookie("refreshToken", result.tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    res.cookie("refreshToken", result.tokens.refreshToken, refreshCookieOptions);
+    logger.info(`POST ${req.originalUrl} — Merchant đăng nhập: ${req.body.email}`, {
+      tenant: tenant.slug, userId: result.user.id, userType: "USER",
     });
+    LogService.activity(req, "LOGIN", "User", result.user.id, { email: req.body.email });
     res.status(200).json(
       APIResponse.OK("Đăng nhập thành công", {
         user: result.user,
@@ -123,12 +122,11 @@ export class AuthController {
       tenant.slug,
       tenant.business_type,
     );
-    res.cookie("refreshToken", result.tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    res.cookie("refreshToken", result.tokens.refreshToken, refreshCookieOptions);
+    logger.info(`POST ${req.originalUrl} — Merchant đăng nhập (global): ${req.body.email}`, {
+      tenant: tenant.slug, userId: result.user.id, userType: "USER",
     });
+    LogService.activity(req, "LOGIN", "User", result.user.id, { email: req.body.email, method: "global" });
     res.status(200).json(
       APIResponse.OK("Đăng nhập thành công", {
         user: result.user,
@@ -144,7 +142,18 @@ export class AuthController {
     if (refreshToken && payload.dbName) {
       await service.merchantLogout(refreshToken, payload.dbName);
     }
-    res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken", refreshCookieOptions);
     res.status(200).json(APIResponse.OK("Đăng xuất thành công"));
+  };
+  merchantProfile = async (req: Request, res: Response) => {
+    const payload = req.user!;
+    const result = await service.getMerchantProfile(
+      payload.sub,
+      payload.tenantId!,
+      payload.dbName!,
+    );
+    res
+      .status(200)
+      .json(APIResponse.OK("Lấy thông tin merchant thành công", result));
   };
 }

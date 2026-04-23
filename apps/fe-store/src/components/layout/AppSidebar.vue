@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Tổng quan', icon: 'pi pi-chart-bar', to: '/dashboard' },
+  { label: 'Dashboard', icon: 'pi pi-th-large', to: '/dashboard' },
   { label: 'Sản phẩm', icon: 'pi pi-box', to: '/products' },
   { label: 'Danh mục', icon: 'pi pi-tags', to: '/categories' },
   { label: 'Thuộc tính', icon: 'pi pi-palette', to: '/attributes' },
@@ -71,8 +71,22 @@ const handleLogout = async () => {
       </RouterLink>
     </nav>
 
-    <!-- Bottom: Logout -->
+    <!-- Bottom -->
     <div class="sidebar-bottom">
+      <!-- Upgrade Plan Button -->
+      <Transition name="fade-text">
+        <button v-if="!collapsed" class="upgrade-btn">
+          <span>Upgrade Plan</span>
+        </button>
+      </Transition>
+
+      <button class="nav-item support-btn" :title="collapsed ? 'Hỗ trợ' : undefined">
+        <i class="pi pi-question-circle nav-icon"></i>
+        <Transition name="fade-text">
+          <span v-if="!collapsed" class="nav-label">Hỗ trợ</span>
+        </Transition>
+      </button>
+
       <button class="nav-item logout-btn" :title="collapsed ? 'Đăng xuất' : undefined" @click="handleLogout">
         <i class="pi pi-sign-out nav-icon"></i>
         <Transition name="fade-text">
@@ -85,9 +99,10 @@ const handleLogout = async () => {
 
 <style scoped>
 .sidebar {
-  width: var(--sidebar-width, 250px);
-  min-width: var(--sidebar-width, 250px);
-  background: linear-gradient(180deg, #1A1A2E 0%, #16162a 100%);
+  width: var(--sidebar-width, 260px);
+  min-width: var(--sidebar-width, 260px);
+  background: #ffffff;
+  border-right: 1px solid #F0F0F0;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -107,8 +122,8 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 20px 20px;
+  border-bottom: 1px solid #F0F0F0;
   min-height: 72px;
 }
 .sidebar.collapsed .logo-section {
@@ -117,12 +132,12 @@ const handleLogout = async () => {
 }
 
 .logo-icon {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  background: rgba(255, 107, 43, 0.12);
-  border: 1px solid rgba(255, 107, 43, 0.2);
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: #FFF3ED;
+  border: 1px solid #FFE0D0;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,26 +146,29 @@ const handleLogout = async () => {
 .logo-text { white-space: nowrap; overflow: hidden; }
 
 .logo-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #FF6B2B;
   letter-spacing: -0.02em;
 }
 
 .logo-sub {
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.65rem;
+  color: #9CA3AF;
   margin-top: 1px;
-  max-width: 140px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 /* ── Nav ───────────────────────── */
 .nav-section {
   flex: 1;
-  padding: 12px 8px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -161,11 +179,11 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.5);
+  padding: 11px 16px;
+  border-radius: 10px;
+  color: #6B7280;
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -178,21 +196,23 @@ const handleLogout = async () => {
 }
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 10px;
+  padding: 11px;
 }
 
 .nav-item:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.06);
+  color: #111827;
+  background: #F9FAFB;
 }
 
 .nav-item.active {
   color: #fff;
-  background: rgba(255, 107, 43, 0.15);
+  background: linear-gradient(135deg, #FF6B2B, #FFD700);
+  box-shadow: 0 4px 12px rgba(255, 107, 43, 0.3);
+  font-weight: 600;
 }
 
 .nav-item.active .nav-icon {
-  color: #FF6B2B;
+  color: #fff;
 }
 
 .nav-icon {
@@ -206,13 +226,37 @@ const handleLogout = async () => {
 
 /* ── Bottom ────────────────────── */
 .sidebar-bottom {
-  padding: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
+  border-top: 1px solid #F0F0F0;
+}
+
+.upgrade-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #FF6B2B, #FFD700);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(255, 107, 43, 0.25);
+}
+.upgrade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 107, 43, 0.35);
+}
+
+.support-btn:hover {
+  color: #FF6B2B !important;
+  background: #FFF3ED !important;
 }
 
 .logout-btn:hover {
   color: #EF4444 !important;
-  background: rgba(239, 68, 68, 0.1) !important;
+  background: #FEF2F2 !important;
 }
 
 /* ── Text fade transition ──────── */
@@ -220,4 +264,11 @@ const handleLogout = async () => {
 .fade-text-leave-active { transition: opacity 0.1s ease; }
 .fade-text-enter-from,
 .fade-text-leave-to { opacity: 0; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: min(82vw, 300px);
+    min-width: min(82vw, 300px);
+  }
+}
 </style>

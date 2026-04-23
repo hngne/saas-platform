@@ -58,4 +58,13 @@ export class InventoryController {
       .status(200)
       .json(APIResponse.OK("Lấy danh sách tồn kho thấp thành công", data));
   };
+
+  exportPdf = async (req: Request, res: Response) => {
+    const filter = inventoryFilterSchema.parse(req.query);
+    const buffer = await this.getService(req).exportPdf(filter);
+    const filename = `BaoCaoTonKho_${Date.now()}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(buffer);
+  };
 }

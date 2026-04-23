@@ -196,6 +196,7 @@ export class AuthService {
           id: tenant.id,
           slug: tenant.slug,
           store_name: tenant.profile?.store_name ?? null,
+          business_type: tenant.business_type,
         },
         tokens,
       };
@@ -242,6 +243,7 @@ export class AuthService {
     businessType: string,
   ): Promise<UserLoginResponse> => {
     const tenantDB = getTenantDB(dbName);
+    const tenant = await repo.findTenantById(tenantId);
 
     const user = await tenantDB.user.findUnique({
       where: { email: dto.email },
@@ -278,9 +280,45 @@ export class AuthService {
       tenant: {
         id: tenantId,
         slug: tenantSlug,
-        businessType,
+        store_name: tenant?.profile?.store_name ?? null,
+        business_type: businessType,
       },
       tokens,
+    };
+  };
+
+  getMerchantProfile = async (userId: string, tenantId: string, dbName: string) => {
+    const tenantDB = getTenantDB(dbName);
+
+    const [user, tenant] = await Promise.all([
+      tenantDB.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      }),
+      repo.findTenantById(tenantId),
+    ]);
+
+    if (!user) {
+      throw new NotFoundException("Không tìm thấy tài khoản");
+    }
+
+    if (!tenant) {
+      throw new NotFoundException("Không tìm thấy cửa hàng");
+    }
+
+    return {
+      user,
+      tenant: {
+        id: tenant.id,
+        slug: tenant.slug,
+        store_name: tenant.profile?.store_name ?? null,
+        business_type: tenant.business_type,
+      },
     };
   };
 

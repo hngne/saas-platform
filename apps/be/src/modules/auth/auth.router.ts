@@ -54,6 +54,12 @@ export default createRouter(controller, [
     middlewares: [authenticate, requireUserType("USER")],
   },
   {
+    method: "get",
+    path: "/merchant/profile",
+    handler: "merchantProfile",
+    middlewares: [authenticate, requireUserType("USER")],
+  },
+  {
     method: "post",
     path: "/merchant/auth/refresh",
     handler: "refreshtoken",

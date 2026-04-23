@@ -19,10 +19,9 @@ const envSchema = z.object({
 
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.string().default("6379"),
-  REDIS_USERNAME: z.string().optional(),
-  REDIS_PASSWORD: z.string().optional(),
+  REDIS_PREFIX: z.string().default("saas"),
 
-  MONGO_URI: z.string().min(1, "MONGO_URI is required"),
+  MONGO_URI: z.string().optional(),
 
   JWT_ACCESS_SECRET: z.string().min(1, "JWT_ACCESS_SECRET is required"),
   JWT_REFRESH_SECRET: z.string().min(1, "JWT_REFRESH_SECRET is required"),
@@ -35,6 +34,19 @@ const envSchema = z.object({
   CLOUDINARY_NAME: z.string().min(1, "CLOUDINARY_NAME is required"),
   CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
   CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
+
+  // VNPay
+  VNP_TMN_CODE: z.string().optional(),
+  VNP_HASH_SECRET: z.string().optional(),
+  VNP_URL: z.string().default("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"),
+  VNP_RETURN_URL: z.string().default("http://localhost:8080/api/payment/vnpay_return"),
+
+  // Frontend URLs
+  STORE_FRONTEND_URL: z.string().default("http://localhost:3001"),
+
+  // Gemini AI
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
 });
 
 const parsed = envSchema.safeParse(process.env);

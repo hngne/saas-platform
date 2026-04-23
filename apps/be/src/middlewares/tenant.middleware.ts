@@ -10,12 +10,21 @@ export const extractTenant = async (
   const hostname = req.hostname;
   const slug = hostname.split(".")[0];
 
+  let searchSlug = slug;
+
   if (EXCLUDED_SLUGS.includes(slug)) {
-    return next();
+    const headerSlug = req.headers["x-tenant-slug"];
+    if (headerSlug && typeof headerSlug === "string") {
+      searchSlug = headerSlug;
+    } else {
+      return res.status(400).json({ 
+        message: "API này yêu cầu thông tin cửa hàng. Vui lòng truyền header 'x-tenant-slug' khi test ở localhost." 
+      });
+    }
   }
 
   const tenant = await prisma.tenant.findUnique({
-    where: { slug },
+    where: { slug: searchSlug },
     include: {
       profile: true,
     },

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { randomUUID } from "crypto";
 import { env } from "../../configs/env";
 import { UnauthorizedException } from "../exceptions";
 
@@ -12,6 +13,7 @@ export interface TokenPayload {
   tenantId?: string;
   dbName?: string;
   businessType?: "RETAIL" | "HOTEL";
+  jti?: string;
 }
 
 // ─── Generate ────────────────────────────────────────
@@ -28,7 +30,7 @@ export const generateAccessToken = (
 export const generateRefreshToken = (
   payload: Omit<TokenPayload, "type">,
 ): string => {
-  return jwt.sign({ ...payload, type: "refresh" }, env.JWT_REFRESH_SECRET, {
+  return jwt.sign({ ...payload, type: "refresh", jti: randomUUID() }, env.JWT_REFRESH_SECRET, {
     expiresIn: env.JWT_REFRESH_EXPIRES as jwt.SignOptions["expiresIn"],
     issuer: "saas-platform",
   });

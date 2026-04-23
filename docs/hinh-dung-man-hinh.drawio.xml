@@ -1,0 +1,180 @@
+<mxfile host="app.diagrams.net">
+<diagram id="mockup" name="Hình dung màn hình 5 chức năng">
+<mxGraphModel dx="4000" dy="3200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5500" pageHeight="4500">
+<root>
+<mxCell id="0"/><mxCell id="1" parent="0"/>
+
+<!-- ========== 1. ĐĂNG NHẬP ========== -->
+<mxCell id="T1" value="1. ĐĂNG NHẬP (Merchant)" style="text;fontSize=16;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="40" y="10" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- Login box -->
+<mxCell id="M1_box" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="40" y="50" width="300" height="280" as="geometry"/></mxCell>
+<mxCell id="M1_title" value="Đăng nhập hệ thống" style="text;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1"><mxGeometry x="60" y="60" width="260" height="30" as="geometry"/></mxCell>
+<mxCell id="M1_lb1" value="Email" style="text;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="60" y="100" width="100" height="20" as="geometry"/></mxCell>
+<mxCell id="M1_in1" value="merchant@email.com" style="rounded=1;fillColor=#FFF;strokeColor=#CCC;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="60" y="120" width="260" height="36" as="geometry"/></mxCell>
+<mxCell id="M1_lb2" value="Mật khẩu" style="text;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="60" y="166" width="100" height="20" as="geometry"/></mxCell>
+<mxCell id="M1_in2" value="••••••••" style="rounded=1;fillColor=#FFF;strokeColor=#CCC;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="60" y="186" width="260" height="36" as="geometry"/></mxCell>
+<mxCell id="M1_btn" value="Đăng nhập" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="240" width="260" height="40" as="geometry"/></mxCell>
+
+<!-- Error popup -->
+<mxCell id="M1_err" value="Thông báo lỗi&#xa;──────────────&#xa;Sai email hoặc mật khẩu!&#xa;Vui lòng thử lại." style="rounded=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=11;align=center;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="410" y="120" width="220" height="90" as="geometry"/></mxCell>
+<mxCell edge="1" source="M1_btn" target="M1_err" parent="1" style="strokeColor=#E53935;strokeWidth=2;dashed=1;endArrow=block;endFill=1;" value="Lỗi"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- ========== 2. BẢO TRÌ SẢN PHẨM ========== -->
+<mxCell id="T2" value="2. BẢO TRÌ SẢN PHẨM" style="text;fontSize=16;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="40" y="400" width="300" height="30" as="geometry"/></mxCell>
+
+<!-- Menu -->
+<mxCell id="M2_menu" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="40" y="440" width="140" height="80" as="geometry"/></mxCell>
+<mxCell id="M2_mt" value="Menu Quản Trị" style="text;fontSize=11;fontStyle=1;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1"><mxGeometry x="45" y="445" width="130" height="20" as="geometry"/></mxCell>
+<mxCell id="M2_mbtn" value="Bảo trì sản phẩm" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;" vertex="1" parent="1"><mxGeometry x="50" y="475" width="120" height="30" as="geometry"/></mxCell>
+
+<!-- Product table -->
+<mxCell id="M2_tbl" value="" style="shape=table;startSize=0;container=1;collapsible=0;childLayout=tableLayout;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="230" y="440" width="500" height="150" as="geometry"/></mxCell>
+<mxCell id="M2_r0" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;fillColor=#E8E8E8;strokeColor=#999;" vertex="1" parent="M2_tbl"><mxGeometry width="500" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_h1" value="Tên sản phẩm" style="shape=partialRectangle;connectable=0;fillColor=#E8E8E8;strokeColor=#999;fontStyle=1;fontSize=11;" vertex="1" parent="M2_r0"><mxGeometry width="170" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_h2" value="Hình ảnh" style="shape=partialRectangle;connectable=0;fillColor=#E8E8E8;strokeColor=#999;fontStyle=1;fontSize=11;" vertex="1" parent="M2_r0"><mxGeometry x="170" width="70" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_h3" value="Danh mục" style="shape=partialRectangle;connectable=0;fillColor=#E8E8E8;strokeColor=#999;fontStyle=1;fontSize=11;" vertex="1" parent="M2_r0"><mxGeometry x="240" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_h4" value="Giá bán" style="shape=partialRectangle;connectable=0;fillColor=#E8E8E8;strokeColor=#999;fontStyle=1;fontSize=11;" vertex="1" parent="M2_r0"><mxGeometry x="320" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_h5" value="" style="shape=partialRectangle;connectable=0;fillColor=#E8E8E8;strokeColor=#999;fontStyle=1;fontSize=11;" vertex="1" parent="M2_r0"><mxGeometry x="400" width="100" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_r1" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;fillColor=#FFF;strokeColor=#999;" vertex="1" parent="M2_tbl"><mxGeometry y="30" width="500" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c11" value="Áo thun nam" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r1"><mxGeometry width="170" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c12" value="☒" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r1"><mxGeometry x="170" width="70" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c13" value="Thời trang" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r1"><mxGeometry x="240" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c14" value="150.000" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r1"><mxGeometry x="320" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c15" value="Sửa  Xóa" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;fontColor=#2D6A4F;" vertex="1" parent="M2_r1"><mxGeometry x="400" width="100" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_r2" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;fillColor=#FFF;strokeColor=#999;" vertex="1" parent="M2_tbl"><mxGeometry y="60" width="500" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c21" value="Quần jeans nữ" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r2"><mxGeometry width="170" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c22" value="☒" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r2"><mxGeometry x="170" width="70" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c23" value="Thời trang" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r2"><mxGeometry x="240" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c24" value="299.000" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="M2_r2"><mxGeometry x="320" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_c25" value="Sửa  Xóa" style="shape=partialRectangle;connectable=0;fillColor=#FFF;strokeColor=#999;fontSize=11;fontColor=#2D6A4F;" vertex="1" parent="M2_r2"><mxGeometry x="400" width="100" height="30" as="geometry"/></mxCell>
+
+<mxCell id="M2_addbtn" value="Thêm" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="660" y="600" width="70" height="30" as="geometry"/></mxCell>
+
+<!-- Add form -->
+<mxCell id="M2_add" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="40" y="660" width="250" height="310" as="geometry"/></mxCell>
+<mxCell id="M2_at" value="Thêm sản phẩm" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="55" y="665" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M2_a1" value="Tên sản phẩm    [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="695" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_a2" value="Giá                      [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="720" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_a3" value="Mô tả                  [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="745" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_a4" value="Danh mục           [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="770" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_a5" value="Biến thể              [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="795" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_a6" value="Hình ảnh            [                    ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="820" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_abtn1" value="Tạo" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="65" y="920" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_abtn2" value="Hủy" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="160" y="920" width="80" height="30" as="geometry"/></mxCell>
+
+<!-- Edit form -->
+<mxCell id="M2_edit" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="340" y="660" width="250" height="310" as="geometry"/></mxCell>
+<mxCell id="M2_et" value="Sửa sản phẩm" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="355" y="665" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M2_e1" value="Tên sản phẩm    [ Áo thun nam  ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="695" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_e2" value="Giá                      [ 150.000          ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="720" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_e3" value="Mô tả                  [ Áo cotton       ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="745" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_e4" value="Danh mục           [ Thời trang     ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="770" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_e5" value="Biến thể              [ S, M, L           ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="795" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_e6" value="Hình ảnh            [ anh.jpg          ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="355" y="820" width="230" height="22" as="geometry"/></mxCell>
+<mxCell id="M2_ebtn1" value="Cập nhật" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="365" y="920" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M2_ebtn2" value="Hủy" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="460" y="920" width="80" height="30" as="geometry"/></mxCell>
+
+<!-- Confirm edit -->
+<mxCell id="M2_conf" value="Xác nhận sửa sản phẩm&#xa;───────────────&#xa;Bạn có đồng ý cập nhật&#xa;sản phẩm này không?" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;whiteSpace=wrap;align=center;" vertex="1" parent="1"><mxGeometry x="430" y="1010" width="200" height="90" as="geometry"/></mxCell>
+<mxCell id="M2_cfb1" value="Đồng Ý" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;" vertex="1" parent="1"><mxGeometry x="445" y="1110" width="80" height="28" as="geometry"/></mxCell>
+<mxCell id="M2_cfb2" value="Hủy" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="535" y="1110" width="80" height="28" as="geometry"/></mxCell>
+
+<!-- Delete confirm -->
+<mxCell id="M2_del" value="Xóa sản phẩm&#xa;───────────────&#xa;Bạn có đồng ý xóa sản&#xa;phẩm này không?" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;whiteSpace=wrap;align=center;" vertex="1" parent="1"><mxGeometry x="660" y="700" width="190" height="90" as="geometry"/></mxCell>
+<mxCell id="M2_db1" value="Đồng Ý" style="rounded=1;fillColor=#E53935;fontColor=#FFF;strokeColor=#B71C1C;fontSize=11;" vertex="1" parent="1"><mxGeometry x="665" y="800" width="80" height="28" as="geometry"/></mxCell>
+<mxCell id="M2_db2" value="Hủy" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="755" y="800" width="80" height="28" as="geometry"/></mxCell>
+
+<!-- Red arrows -->
+<mxCell edge="1" source="M2_addbtn" target="M2_add" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M2_tbl" target="M2_edit" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;" value="Sửa"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M2_tbl" target="M2_del" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;" value="Xóa"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M2_ebtn1" target="M2_conf" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M2_mbtn" target="M2_tbl" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+
+<!-- ========== 3. QUẢN LÝ KHO HÀNG ========== -->
+<mxCell id="T3" value="3. QUẢN LÝ KHO HÀNG" style="text;fontSize=16;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="900" y="10" width="300" height="30" as="geometry"/></mxCell>
+<mxCell id="M3_tbl" value="" style="rounded=1;fillColor=#FFF;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="900" y="50" width="480" height="130" as="geometry"/></mxCell>
+<mxCell id="M3_th" value="Tên SP              SKU           Tồn kho    Trạng thái" style="text;fontSize=11;fontStyle=1;fillColor=#E8E8E8;strokeColor=#999;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="900" y="50" width="480" height="28" as="geometry"/></mxCell>
+<mxCell id="M3_r1" value="Áo thun nam     AT-001       150           Bình thường" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="900" y="80" width="480" height="24" as="geometry"/></mxCell>
+<mxCell id="M3_r2" value="Quần jeans nữ   QJ-002       3              ⚠ Sắp hết" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;spacingLeft=8;fontColor=#E65100;" vertex="1" parent="1"><mxGeometry x="900" y="106" width="480" height="24" as="geometry"/></mxCell>
+<mxCell id="M3_b1" value="Nhập kho" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="190" width="90" height="30" as="geometry"/></mxCell>
+<mxCell id="M3_b2" value="Xuất kho" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1000" y="190" width="90" height="30" as="geometry"/></mxCell>
+<mxCell id="M3_b3" value="Lịch sử" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1100" y="190" width="90" height="30" as="geometry"/></mxCell>
+<mxCell id="M3_nhap" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="900" y="250" width="230" height="180" as="geometry"/></mxCell>
+<mxCell id="M3_nt" value="Nhập kho" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="915" y="255" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M3_n1" value="Biến thể        [  Áo thun - M   ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="915" y="285" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M3_n2" value="Số lượng       [  50                  ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="915" y="310" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M3_n3" value="Ghi chú          [  Nhập lô mới ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="915" y="335" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M3_nb1" value="Nhập" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="915" y="385" width="80" height="28" as="geometry"/></mxCell>
+<mxCell id="M3_nb2" value="Hủy" style="rounded=1;fillColor=#FFF;strokeColor=#999;fontSize=11;" vertex="1" parent="1"><mxGeometry x="1005" y="385" width="80" height="28" as="geometry"/></mxCell>
+<mxCell id="M3_log" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="1160" y="250" width="300" height="150" as="geometry"/></mxCell>
+<mxCell id="M3_lt" value="Lịch sử kho" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="1175" y="255" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M3_lh" value="Ngày          Loại       SL       Ghi chú" style="text;fontSize=10;fontStyle=1;fillColor=#E8E8E8;strokeColor=none;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="1165" y="285" width="290" height="22" as="geometry"/></mxCell>
+<mxCell id="M3_l1" value="22/04         IN          +50     Nhập lô mới" style="text;fontSize=10;fillColor=none;strokeColor=none;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="1165" y="310" width="290" height="22" as="geometry"/></mxCell>
+<mxCell id="M3_l2" value="21/04         OUT       -5        Đơn #A1B2" style="text;fontSize=10;fillColor=none;strokeColor=none;align=left;spacingLeft=6;" vertex="1" parent="1"><mxGeometry x="1165" y="335" width="290" height="22" as="geometry"/></mxCell>
+<mxCell edge="1" source="M3_b1" target="M3_nhap" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M3_b3" target="M3_log" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- ========== 4. XEM SP THEO DANH MỤC ========== -->
+<mxCell id="T4" value="4. XEM SP THEO DANH MỤC (Customer)" style="text;fontSize=16;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="900" y="460" width="400" height="30" as="geometry"/></mxCell>
+<mxCell id="M4_home" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="900" y="500" width="200" height="130" as="geometry"/></mxCell>
+<mxCell id="M4_ht" value="Trang chủ" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1"><mxGeometry x="910" y="505" width="180" height="25" as="geometry"/></mxCell>
+<mxCell id="M4_c1" value="[ Thời trang ]" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;align=center;" vertex="1" parent="1"><mxGeometry x="915" y="540" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M4_c2" value="[ Điện tử ]" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;align=center;" vertex="1" parent="1"><mxGeometry x="1005" y="540" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M4_c3" value="[ Gia dụng ]" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;align=center;" vertex="1" parent="1"><mxGeometry x="915" y="580" width="80" height="30" as="geometry"/></mxCell>
+<mxCell id="M4_list" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="1150" y="500" width="300" height="200" as="geometry"/></mxCell>
+<mxCell id="M4_lt2" value="Thời trang (3 sản phẩm)" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="1160" y="505" width="280" height="25" as="geometry"/></mxCell>
+<mxCell id="M4_p1" value="[☒] Áo thun nam     150.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="540" width="280" height="24" as="geometry"/></mxCell>
+<mxCell id="M4_p2" value="[☒] Quần jeans nữ    299.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="568" width="280" height="24" as="geometry"/></mxCell>
+<mxCell id="M4_p3" value="[☒] Váy công sở        350.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="596" width="280" height="24" as="geometry"/></mxCell>
+<mxCell id="M4_sort" value="Sắp xếp: [Giá tăng ▼]   Trang: [1] [2]" style="text;fontSize=10;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="660" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M4_detail" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="1150" y="730" width="300" height="180" as="geometry"/></mxCell>
+<mxCell id="M4_dt" value="Chi tiết: Áo thun nam" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="1160" y="735" width="280" height="25" as="geometry"/></mxCell>
+<mxCell id="M4_d1" value="[☒ Ảnh SP]    Giá: 150.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="768" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M4_d2" value="Size: [S] [M] [L]    Màu: [Trắng] [Đen]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="795" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M4_d3" value="⭐⭐⭐⭐☆ (12 đánh giá)" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="1160" y="822" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M4_dbtn" value="Thêm vào giỏ" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1160" y="860" width="120" height="30" as="geometry"/></mxCell>
+<mxCell edge="1" source="M4_c1" target="M4_list" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M4_list" target="M4_detail" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;" value="Xem"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+<!-- ========== 5. THANH TOÁN ========== -->
+<mxCell id="T5" value="5. THANH TOÁN ĐƠN HÀNG (Customer)" style="text;fontSize=16;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="40" y="1180" width="400" height="30" as="geometry"/></mxCell>
+<mxCell id="M5_cart" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="40" y="1220" width="280" height="160" as="geometry"/></mxCell>
+<mxCell id="M5_ct" value="Giỏ hàng" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="55" y="1225" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M5_cr1" value="Áo thun nam (M)    x2    300.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1258" width="260" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_cr2" value="Quần jeans nữ (L)   x1    299.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1283" width="260" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_cr3" value="Tổng: 599.000đ" style="text;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1318" width="200" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_cbtn" value="Thanh toán" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="55" y="1348" width="120" height="28" as="geometry"/></mxCell>
+<mxCell id="M5_ck" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="40" y="1420" width="300" height="340" as="geometry"/></mxCell>
+<mxCell id="M5_ckt" value="Thanh toán" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="55" y="1425" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M5_f1" value="Họ tên               [ Nguyễn Văn A  ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1458" width="270" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f2" value="SĐT                   [ 0912345678     ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1483" width="270" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f3" value="Địa chỉ              [ 123 Hai Bà Trưng ]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1508" width="270" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f4" value="☐ Nhận tại cửa hàng" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1540" width="200" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f5" value="Vận chuyển      ◉ Giao nhanh 30.000đ" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1570" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f6" value="Thanh toán       ◉ COD  ○ VNPay" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1600" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f7" value="Voucher            [ GIAMGIA50%    ]  [Áp dụng]" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="55" y="1630" width="280" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_f8" value="Tổng thanh toán: 629.000đ" style="text;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;fontColor=#E65100;" vertex="1" parent="1"><mxGeometry x="55" y="1670" width="250" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_obtn" value="Đặt hàng" style="rounded=1;fillColor=#2D6A4F;fontColor=#FFF;strokeColor=#1B4332;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="55" y="1710" width="260" height="36" as="geometry"/></mxCell>
+<mxCell id="M5_addr" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="390" y="1420" width="230" height="130" as="geometry"/></mxCell>
+<mxCell id="M5_at" value="Chọn địa chỉ" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="405" y="1425" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M5_a1" value="◉ 123 Hai Bà Trưng, HN" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="405" y="1458" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_a2" value="○ 456 Lê Lợi, HCM" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="405" y="1483" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_abtn" value="📍 Dùng vị trí GPS" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;" vertex="1" parent="1"><mxGeometry x="405" y="1515" width="140" height="28" as="geometry"/></mxCell>
+<mxCell id="M5_pickup" value="" style="rounded=1;fillColor=#F5F5F5;strokeColor=#999;" vertex="1" parent="1"><mxGeometry x="390" y="1580" width="230" height="120" as="geometry"/></mxCell>
+<mxCell id="M5_pt" value="Chọn cửa hàng" style="text;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="405" y="1585" width="200" height="25" as="geometry"/></mxCell>
+<mxCell id="M5_p1" value="◉ CN Cầu Giấy (1.2km)" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="405" y="1618" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_p2" value="○ CN Đống Đa (3.5km)" style="text;fontSize=11;fillColor=none;strokeColor=none;align=left;" vertex="1" parent="1"><mxGeometry x="405" y="1643" width="210" height="22" as="geometry"/></mxCell>
+<mxCell id="M5_pbtn" value="📍 Gần tôi nhất" style="rounded=1;fillColor=#E8F5E9;strokeColor=#A5D6A7;fontSize=11;" vertex="1" parent="1"><mxGeometry x="405" y="1670" width="120" height="28" as="geometry"/></mxCell>
+<mxCell id="M5_ok" value="Đặt hàng thành công! ✅&#xa;──────────────────&#xa;Mã đơn: #DH-A1B2C3&#xa;Tổng: 629.000đ&#xa;[Xem chi tiết đơn]   [Về trang chủ]" style="rounded=1;fillColor=#C8E6C9;strokeColor=#66BB6A;fontSize=11;whiteSpace=wrap;align=center;" vertex="1" parent="1"><mxGeometry x="390" y="1730" width="240" height="110" as="geometry"/></mxCell>
+<mxCell edge="1" source="M5_cbtn" target="M5_ck" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M5_ck" target="M5_addr" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;" value="Chọn ĐC"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M5_ck" target="M5_pickup" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;" value="Nhận tại CH"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell edge="1" source="M5_obtn" target="M5_ok" parent="1" style="strokeColor=#E53935;strokeWidth=2;endArrow=block;endFill=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+</root>
+</mxGraphModel>
+</diagram>
+</mxfile>

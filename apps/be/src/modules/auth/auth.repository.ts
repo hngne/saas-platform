@@ -113,6 +113,13 @@ export class AuthRepository {
     });
   }
 
+  async findTenantById(id: string) {
+    return prisma.tenant.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+  }
+
   async deleteTenantById(id: string) {
     return prisma.tenant.delete({ where: { id } }).catch(() => {});
   }

@@ -26,6 +26,12 @@ export default createRouter(controller, [
   },
   {
     method: "get",
+    path: "/merchant/inventory/export-pdf",
+    handler: "exportPdf",
+    middlewares: [...merchantAuth],
+  },
+  {
+    method: "get",
     path: "/merchant/inventory/:variantId",
     handler: "getByVariantId",
     middlewares: [...merchantAuth],

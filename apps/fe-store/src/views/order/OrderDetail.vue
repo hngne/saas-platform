@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { orderService, type Order, type UpdateOrderStatusDto } from '@/services/order.service'
 import { useAppToast } from '@/composables/useToast'
-import { formatVND, formatDateTime } from '@/utils/format'
+import { formatVND } from '@/utils/format'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
@@ -22,18 +22,28 @@ const statusNote = ref('')
 
 const statusOptions = computed(() => {
   if (!order.value) return []
+
   const current = order.value.order_status
   const map: Record<string, string[]> = {
     PENDING: ['PROCESSING', 'CANCELLED'],
     PROCESSING: ['SHIPPED', 'CANCELLED'],
     SHIPPED: ['DELIVERED'],
     DELIVERED: [],
+    COMPLETED: [],
     CANCELLED: [],
   }
-  return (map[current] || []).map(s => {
-    const labels: Record<string, string> = { PROCESSING: 'Xử lý', SHIPPED: 'Giao hàng', DELIVERED: 'Đã giao', CANCELLED: 'Hủy đơn' }
-    return { label: labels[s] || s, value: s }
-  })
+
+  const labels: Record<string, string> = {
+    PROCESSING: 'Xử lý',
+    SHIPPED: 'Giao hàng',
+    DELIVERED: 'Đã giao',
+    CANCELLED: 'Hủy đơn',
+  }
+
+  return (map[current] || []).map((status) => ({
+    label: labels[status] || status,
+    value: status,
+  }))
 })
 
 const fetchOrder = async () => {
@@ -44,22 +54,30 @@ const fetchOrder = async () => {
   } catch {
     toast.error('Không thể tải đơn hàng')
     router.push('/orders')
-  } finally { loading.value = false }
+  } finally {
+    loading.value = false
+  }
 }
 
 const updateStatus = async () => {
   if (!newStatus.value || !order.value) return
+
   updating.value = true
   try {
-    const dto: UpdateOrderStatusDto = { order_status: newStatus.value as any, note: statusNote.value || undefined }
+    const dto: UpdateOrderStatusDto = {
+      order_status: newStatus.value as UpdateOrderStatusDto['order_status'],
+      note: statusNote.value || undefined,
+    }
     await orderService.updateStatus(order.value.id, dto)
     toast.success('Cập nhật trạng thái thành công')
     newStatus.value = ''
     statusNote.value = ''
-    fetchOrder()
+    await fetchOrder()
   } catch (err: any) {
     toast.error('Lỗi', err.response?.data?.message || 'Cập nhật thất bại')
-  } finally { updating.value = false }
+  } finally {
+    updating.value = false
+  }
 }
 
 onMounted(fetchOrder)
@@ -80,7 +98,6 @@ onMounted(fetchOrder)
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-      <!-- Customer info -->
       <div class="app-card p-5 fade-in-up">
         <h4 class="text-sm font-bold mb-3"><i class="pi pi-user mr-2"></i>Khách hàng</h4>
         <div class="space-y-2 text-sm">
@@ -91,7 +108,6 @@ onMounted(fetchOrder)
         </div>
       </div>
 
-      <!-- Payment -->
       <div class="app-card p-5 fade-in-up">
         <h4 class="text-sm font-bold mb-3"><i class="pi pi-wallet mr-2"></i>Thanh toán</h4>
         <div class="space-y-2 text-sm">
@@ -101,7 +117,6 @@ onMounted(fetchOrder)
         </div>
       </div>
 
-      <!-- Update status -->
       <div class="app-card p-5 fade-in-up">
         <h4 class="text-sm font-bold mb-3"><i class="pi pi-sync mr-2"></i>Cập nhật trạng thái</h4>
         <div v-if="statusOptions.length" class="flex flex-col gap-3">
@@ -109,11 +124,12 @@ onMounted(fetchOrder)
           <Textarea v-model="statusNote" rows="2" placeholder="Ghi chú (tùy chọn)" class="w-full" />
           <Button label="Cập nhật" class="btn-gradient w-full" :loading="updating" :disabled="!newStatus" @click="updateStatus" />
         </div>
-        <p v-else class="text-sm" style="color: var(--text-muted)">Không thể thay đổi trạng thái.</p>
+        <p v-else class="text-sm" style="color: var(--text-muted)">
+          Không thể thay đổi trạng thái. Nếu đơn đã giao thì chờ khách xác nhận nhận hàng để hoàn tất.
+        </p>
       </div>
     </div>
 
-    <!-- Items -->
     <div class="app-card p-5 fade-in-up">
       <h4 class="text-sm font-bold mb-3"><i class="pi pi-list mr-2"></i>Sản phẩm ({{ order.items?.length || 0 }})</h4>
       <DataTable :value="order.items || []" class="text-sm" stripedRows>

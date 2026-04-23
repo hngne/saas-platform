@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { PostService } from "./post.service";
 import { getTenantDB } from "@/configs/tenant-db";
 import { APIResponse } from "@/shared/utils/response.util";
+import { CacheService } from "@/configs/cache.service";
+
+const cache = new CacheService();
 import { postFilterSchema } from "./post.validator";
 
 export class PostController {
@@ -26,6 +29,7 @@ export class PostController {
   create = async (req: Request, res: Response) => {
     const userId = req.user!.sub;
     const data = await this.getService(req).create(req.body, userId);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res
       .status(201)
       .json(APIResponse.Created("Tạo bài viết thành công", data));
@@ -36,6 +40,7 @@ export class PostController {
       req.params.id as string,
       req.body,
     );
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res
       .status(200)
       .json(APIResponse.OK("Cập nhật bài viết thành công", data));
@@ -43,6 +48,7 @@ export class PostController {
 
   delete = async (req: Request, res: Response) => {
     await this.getService(req).delete(req.params.id as string);
+    await cache.delPattern(`blogs:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Xóa bài viết thành công"));
   };
 }

@@ -4,6 +4,12 @@ export interface PromotionDetail {
   product_id: string
   discount_percent: number
   product_name?: string
+  product?: {
+    id: string
+    name: string
+    base_price: number
+    image_url?: string | null
+  }
 }
 
 export interface Promotion {
@@ -44,17 +50,68 @@ export interface PromotionFilter {
   date_to?: string
 }
 
+const toNumber = (value: number | string | null | undefined): number => {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') return Number(value) || 0
+  return 0
+}
+
+const normalizeDetail = (detail: any): PromotionDetail => ({
+  ...detail,
+  discount_percent: Number(detail.discount_percent || 0),
+  product_name: detail.product_name || detail.product?.name || '',
+  product: detail.product
+    ? {
+        id: detail.product.id,
+        name: detail.product.name,
+        base_price: toNumber(detail.product.base_price),
+        image_url:
+          detail.product.images?.[0]?.image_url
+          || detail.product.images?.[0]?.url
+          || detail.product.image_url
+          || null,
+      }
+    : undefined,
+})
+
+const normalizePromotion = (promotion: any): Promotion => ({
+  ...promotion,
+  details: (promotion.details || []).map(normalizeDetail),
+})
+
+const normalizePromotionListPayload = (payload: any) => {
+  if (Array.isArray(payload?.data)) {
+    payload.data = payload.data.map(normalizePromotion)
+    return payload
+  }
+
+  if (Array.isArray(payload?.items)) {
+    payload.items = payload.items.map(normalizePromotion)
+    return payload
+  }
+
+  if (Array.isArray(payload)) {
+    return payload.map(normalizePromotion)
+  }
+
+  return payload
+}
+
 export const promotionService = {
-  getAll(params?: PromotionFilter) {
-    return api.get('/merchant/promotions', { params })
+  async getAll(params?: PromotionFilter) {
+    const response = await api.get('/merchant/promotions', { params })
+    response.data.data = normalizePromotionListPayload(response.data.data)
+    return response
   },
 
   getByProduct(productId: string) {
     return api.get(`/merchant/promotions/product/${productId}`)
   },
 
-  getById(id: string) {
-    return api.get(`/merchant/promotions/${id}`)
+  async getById(id: string) {
+    const response = await api.get(`/merchant/promotions/${id}`)
+    response.data.data = normalizePromotion(response.data.data)
+    return response
   },
 
   create(dto: CreatePromotionDto) {

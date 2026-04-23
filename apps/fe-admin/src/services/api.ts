@@ -1,26 +1,64 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth.store";
 
+const isLocalNetworkHost = (hostname: string) =>
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+  /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+  /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname);
+
+const resolveBaseURL = () => {
+  const rawBaseURL =
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_URL_T ||
+    "http://localhost:8080/api";
+
+  if (typeof window === "undefined") return rawBaseURL;
+
+  try {
+    const url = new URL(rawBaseURL, window.location.origin);
+    const currentHostname = window.location.hostname;
+    const apiHostname = url.hostname;
+
+    if (
+      isLocalNetworkHost(currentHostname) &&
+      isLocalNetworkHost(apiHostname)
+    ) {
+      url.hostname = currentHostname;
+    }
+
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return rawBaseURL;
+  }
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
-  withCredentials: true, // gửi cookie (refreshToken)
+  baseURL: resolveBaseURL(),
+  withCredentials: true,
 });
 
-// ─── Request Interceptor: gắn accessToken ──────────
 api.interceptors.request.use((config) => {
   const authStore = useAuthStore();
-  if (authStore.accessToken) {
-    config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+  const token = authStore.accessToken || localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// ─── Response Interceptor: tự động refresh token ───
 let isRefreshing = false;
 let refreshQueue: Array<{
   resolve: (token: string) => void;
   reject: (err: any) => void;
 }> = [];
+
+const redirectToLogin = () => {
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+};
 
 const processQueue = (error: any, token: string | null = null) => {
   refreshQueue.forEach((p) => {
@@ -35,13 +73,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu 401 + chưa retry => thử refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Nếu chính request refresh bị lỗi => logout luôn
       if (originalRequest.url?.includes("/admin/auth/refresh")) {
         const authStore = useAuthStore();
         authStore.clearAuth();
-        window.location.href = "/login";
         return Promise.reject(error);
       }
 
@@ -63,7 +98,7 @@ api.interceptors.response.use(
         const { data } = await api.post("/admin/auth/refresh");
         const newAccessToken = data.data.accessToken;
         const authStore = useAuthStore();
-        authStore.accessToken = newAccessToken;
+        authStore.setAccessToken(newAccessToken);
 
         processQueue(null, newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -72,7 +107,7 @@ api.interceptors.response.use(
         processQueue(refreshError);
         const authStore = useAuthStore();
         authStore.clearAuth();
-        window.location.href = "/login";
+        redirectToLogin();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

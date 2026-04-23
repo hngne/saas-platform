@@ -11,7 +11,8 @@
     "dev:admin": "npm run dev --prefix apps/fe-admin",
     "dev:landing": "npm run dev --prefix apps/fe-landing",
     "dev:store": "npm run dev --prefix apps/fe-store",
-    "dev": "concurrently \"npm:dev:be\" \"npm:dev:admin\" \"npm:dev:landing\" \"npm:dev:store\" --kill-others --prefix-colors \"red,blue,green,yellow\""
+    "dev:customer": "npm run dev --prefix apps/fe-customer",
+    "dev": "concurrently \"npm:dev:be\" \"npm:dev:admin\" \"npm:dev:landing\" \"npm:dev:store\" \"npm:dev:customer\" --kill-others --prefix-colors \"red,blue,green,yellow,magenta\""
   },
   "repository": {
     "type": "git",

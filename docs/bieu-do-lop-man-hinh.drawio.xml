@@ -1,0 +1,187 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="class" name="Biểu đồ lớp màn hình">
+    <mxGraphModel dx="6401" dy="627" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="4200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="L1" parent="1" style="text;fontSize=16;fontStyle=1;fillColor=none;strokeColor=none;" value="1. ĐĂNG NHẬP" vertex="1">
+          <mxGeometry height="30" width="200" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="uC54cR1WKhUfmko_cEl4-26" edge="1" parent="1" source="A1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="A3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A1" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;LoginScreen&#xa;─────────────&#xa;+email&#xa;+matKhau&#xa;─────────────&#xa;+dangNhap()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="160" width="200" x="40" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="A2" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;LoginForm&#xa;─────────────&#xa;+email&#xa;+matKhau&#xa;─────────────&#xa;+xacThuc()" vertex="1">
+          <mxGeometry height="140" width="200" x="40" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="A3" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;DashboardScreen&#xa;─────────────&#xa;+thongKe&#xa;+donHangMoi&#xa;─────────────&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="150" width="200" x="550" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="A4" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;LoiDangNhapScreen&#xa;─────────────&#xa;+thongBaoLoi&#xa;─────────────&#xa;+thuLai()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="150" width="200" x="390" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-1" edge="1" parent="1" source="A1" style="endArrow=open;endFill=0;" target="A2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-2" edge="1" parent="1" source="A1" style="endArrow=open;endFill=1;" target="A3" value="+dang nhap thanh cong">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-3" edge="1" parent="1" source="A1" style="endArrow=open;endFill=1;dashed=1;" target="A4" value="+loi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L2" parent="1" style="text;fontSize=16;fontStyle=1;fillColor=none;strokeColor=none;" value="2. BẢO TRÌ SẢN PHẨM" vertex="1">
+          <mxGeometry height="30" width="300" x="-230" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="B0" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;MenuQuanTriScreen&#xa;─────────────&#xa;+baoTriSanPham()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="110" width="210" x="-230" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="B1" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;BaoTriSPScreen&#xa;─────────────&#xa;+maSP&#xa;+tenSP&#xa;+gia&#xa;+moTa&#xa;+soLuong&#xa;+danhMuc&#xa;+hinhAnh&#xa;─────────────&#xa;+themMoi()&#xa;+sua()&#xa;+xoa()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="280" width="210" x="220" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="B1F" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;BaoTriSPForm&#xa;─────────────&#xa;+sua()&#xa;+xoa()" vertex="1">
+          <mxGeometry height="100" width="180" x="750" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="B2" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;ThemSPScreen&#xa;─────────────&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="90" width="200" x="-230" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="B2F" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;ThemSPForm&#xa;─────────────&#xa;+tenSP&#xa;+gia&#xa;+moTa&#xa;+soLuong&#xa;+danhMuc&#xa;+hinhAnh&#xa;+bienThe&#xa;─────────────&#xa;+tao()" vertex="1">
+          <mxGeometry height="220" width="200" x="-225" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="B3" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;SuaSPScreen&#xa;─────────────&#xa;+maSP&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="100" width="200" x="225" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="B3F" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;SuaSPForm&#xa;─────────────&#xa;+tenSP&#xa;+gia&#xa;+moTa&#xa;+soLuong&#xa;+danhMuc&#xa;+hinhAnh&#xa;+bienThe&#xa;─────────────&#xa;+capNhat()" vertex="1">
+          <mxGeometry height="220" width="200" x="225" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="B4" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;XoaSPScreen&#xa;─────────────&#xa;+dongY()&#xa;+huy()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="120" width="200" x="780" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="B5" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;SuaSPXacNhanScreen&#xa;─────────────&#xa;+dongY&#xa;+huy&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="120" width="210" x="770" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-4" edge="1" parent="1" source="B0" style="endArrow=open;endFill=1;" target="B1" value="+bao tri san pham">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-5" edge="1" parent="1" source="B1" style="endArrow=open;endFill=1;" target="B1F" value="+huy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-6" edge="1" parent="1" source="B1" style="endArrow=open;endFill=1;" target="B2" value="+them moi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-7" edge="1" parent="1" source="B1" style="endArrow=open;endFill=1;" target="B3" value="+sua">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-8" edge="1" parent="1" source="B1" style="endArrow=open;endFill=1;" target="B4" value="+xoa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-9" edge="1" parent="1" source="B1" style="endArrow=open;endFill=1;" target="B5" value="+dong y">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-10" edge="1" parent="1" source="B2" style="endArrow=open;endFill=0;" target="B2F" value="+tao">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-11" edge="1" parent="1" source="B3" style="endArrow=open;endFill=0;" target="B3F">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-12" edge="1" parent="1" source="B3" style="endArrow=open;endFill=1;" target="B5" value="+cap nhat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L3" parent="1" style="text;fontSize=16;fontStyle=1;fillColor=none;strokeColor=none;" value="3. QUẢN LÝ KHO HÀNG" vertex="1">
+          <mxGeometry height="30" width="300" x="-100" y="1500" as="geometry" />
+        </mxCell>
+        <mxCell id="C1" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;TonKhoScreen&#xa;─────────────&#xa;+maSP&#xa;+tenSP&#xa;+SKU&#xa;+soLuongTon&#xa;+canhBao&#xa;─────────────&#xa;+nhapKho()&#xa;+xuatKho()&#xa;+dieuChinh()&#xa;+xemLog()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="270" width="210" x="240" y="1550" as="geometry" />
+        </mxCell>
+        <mxCell id="C2" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;NhapKhoScreen&#xa;─────────────&#xa;+bienThe&#xa;+soLuong&#xa;+ghiChu&#xa;─────────────&#xa;+nhap()&#xa;+huy()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="190" width="200" x="620" y="1590" as="geometry" />
+        </mxCell>
+        <mxCell id="C2F" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;NhapKhoForm&#xa;─────────────&#xa;+bienThe&#xa;+soLuong&#xa;+ghiChu&#xa;─────────────&#xa;+nhapKho()" vertex="1">
+          <mxGeometry height="160" width="200" x="620" y="1940" as="geometry" />
+        </mxCell>
+        <mxCell id="C3" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;XuatDieuChinhScreen&#xa;─────────────&#xa;+loai (OUT/ADJUST/RETURN)&#xa;+bienThe&#xa;+soLuong&#xa;+ghiChu&#xa;─────────────&#xa;+thucHien()&#xa;+huy()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="210" width="220" x="-100" y="1580" as="geometry" />
+        </mxCell>
+        <mxCell id="C4" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;LichSuKhoScreen&#xa;─────────────&#xa;+ngay&#xa;+loai&#xa;+soLuongTruoc&#xa;+soLuongSau&#xa;+ghiChu&#xa;─────────────&#xa;+locTheoLoai()&#xa;+locTheoSP()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="210" width="220" x="235" y="1880" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-13" edge="1" parent="1" source="C1" style="endArrow=open;endFill=1;" target="C2" value="+nhap kho">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-14" edge="1" parent="1" source="C1" style="endArrow=open;endFill=1;" target="C3" value="+xuat/dieu chinh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-15" edge="1" parent="1" source="C1" style="endArrow=open;endFill=1;" target="C4" value="+xem log">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-16" edge="1" parent="1" source="C2" style="endArrow=open;endFill=0;" target="C2F">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L4" parent="1" style="text;fontSize=16;fontStyle=1;fillColor=none;strokeColor=none;" value="4. XEM SP THEO DANH MỤC" vertex="1">
+          <mxGeometry height="30" width="300" x="1350" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="D1" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;TrangChuScreen&#xa;─────────────&#xa;+danhSachDanhMuc&#xa;+sanPhamNoiBat&#xa;─────────────&#xa;+chonDanhMuc()&#xa;+timKiem()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="180" width="210" x="1350" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="D2" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;DanhMucSPScreen&#xa;─────────────&#xa;+tenDanhMuc&#xa;+danhSachSP&#xa;+trang&#xa;+sapXep&#xa;─────────────&#xa;+locGia()&#xa;+sapXep()&#xa;+chuyenTrang()&#xa;+xemChiTiet()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="240" width="210" x="1350" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="D3" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;ChiTietSPScreen&#xa;─────────────&#xa;+tenSP&#xa;+gia&#xa;+moTa&#xa;+hinhAnh&#xa;+bienThe&#xa;+danhGia&#xa;─────────────&#xa;+chonBienThe()&#xa;+themGioHang()&#xa;+xemDanhGia()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="250" width="210" x="1725" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="D4" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;TimKiemScreen&#xa;─────────────&#xa;+tuKhoa&#xa;+ketQua&#xa;─────────────&#xa;+timKiem()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="150" width="200" x="1730" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-17" edge="1" parent="1" source="D1" style="endArrow=open;endFill=1;" target="D2" value="+chon danh muc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-18" edge="1" parent="1" source="D1" style="endArrow=open;endFill=1;" target="D4" value="+tim kiem">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-19" edge="1" parent="1" source="D2" style="endArrow=open;endFill=1;" target="D3" value="+xem chi tiet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-20" edge="1" parent="1" source="D4" style="endArrow=open;endFill=1;" target="D3" value="+xem chi tiet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L5" parent="1" style="text;fontSize=16;fontStyle=1;fillColor=none;strokeColor=none;" value="5. THANH TOÁN ĐƠN HÀNG" vertex="1">
+          <mxGeometry height="30" width="300" x="1360" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="E1" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;GioHangScreen&#xa;─────────────&#xa;+danhSachSP&#xa;+soLuong&#xa;+tongTien&#xa;─────────────&#xa;+tangGiam()&#xa;+xoaSP()&#xa;+thanhToan()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="210" width="210" x="1370" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="E2" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;ThanhToanScreen&#xa;─────────────&#xa;+hoTen&#xa;+soDienThoai&#xa;+diaChi&#xa;+phuongThucVC&#xa;+phuongThucTT&#xa;+maGiamGia&#xa;+tongTien&#xa;─────────────&#xa;+chonDiaChi()&#xa;+chonCuaHang()&#xa;+apVoucher()&#xa;+datHang()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="300" width="210" x="1365" y="950" as="geometry" />
+        </mxCell>
+        <mxCell id="E3" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;ChonDiaChiScreen&#xa;─────────────&#xa;+danhSachDiaChi&#xa;─────────────&#xa;+chon()&#xa;+themMoi()&#xa;+GPSDinhVi()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="160" width="210" x="1915" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="E4" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;ChonCuaHangScreen&#xa;─────────────&#xa;+danhSachCuaHang&#xa;+khoangCach&#xa;─────────────&#xa;+chon()&#xa;+ganToiNhat()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="160" width="210" x="1805" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="E5" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;screen&gt;&gt;&#xa;DatHangThanhCongScreen&#xa;─────────────&#xa;+maDonHang&#xa;+trangThai&#xa;─────────────&#xa;+xemChiTiet()&#xa;+veHome()&#xa;&lt;&lt;system&gt;&gt;+navigate()" vertex="1">
+          <mxGeometry height="160" width="220" x="1360" y="1380" as="geometry" />
+        </mxCell>
+        <mxCell id="E2F" parent="1" style="shape=mxgraph.basic.rect;fillColor=#FFFFFF;strokeColor=#000000;fontSize=12;align=left;spacingLeft=8;spacingTop=4;whiteSpace=wrap;" value="&lt;&lt;form&gt;&gt;&#xa;ThanhToanForm&#xa;─────────────&#xa;+hoTen&#xa;+soDienThoai&#xa;+diaChi&#xa;+ghiChu&#xa;+maGiamGia&#xa;─────────────&#xa;+datHang()" vertex="1">
+          <mxGeometry height="190" width="200" x="1915" y="1230" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-21" edge="1" parent="1" source="E1" style="endArrow=open;endFill=1;" target="E2" value="+thanh toan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-22" edge="1" parent="1" source="E2" style="endArrow=open;endFill=1;" target="E3" value="+chon dia chi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-23" edge="1" parent="1" source="E2" style="endArrow=open;endFill=1;" target="E4" value="+chon cua hang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-24" edge="1" parent="1" source="E2" style="endArrow=open;endFill=1;" target="E5" value="+dat hang">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="229unuohKwoKLB8dizvu-25" edge="1" parent="1" source="E2" style="endArrow=open;endFill=0;" target="E2F">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -2,6 +2,8 @@ import { createRouter } from "@/shared/utils/createRouter.util";
 import { CategoryController } from "./category.controller";
 import { validate } from "@/middlewares/validator.middleware";
 import { authenticate, requireUserType } from "@/middlewares/auth.middleware";
+import { uploadCategory } from "@/middlewares/upload.middleware";
+import { Request, Response, NextFunction } from "express";
 import {
   createCategorySchema,
   updateCategorySchema,
@@ -10,6 +12,21 @@ import {
 
 const controller = new CategoryController();
 const merchantAuth = [authenticate, requireUserType("USER")];
+
+// Middleware: parse multipart string fields to proper types
+const parseMultipart = (req: Request, _res: Response, next: NextFunction) => {
+  if (typeof req.body.sort_order === "string") {
+    req.body.sort_order = parseInt(req.body.sort_order, 10) || 0;
+  }
+  if (typeof req.body.is_active === "string") {
+    req.body.is_active = req.body.is_active === "true";
+  }
+  // Remove empty parent_id
+  if (req.body.parent_id === "" || req.body.parent_id === "null") {
+    req.body.parent_id = null;
+  }
+  next();
+};
 
 export default createRouter(controller, [
   {
@@ -34,13 +51,23 @@ export default createRouter(controller, [
     method: "post",
     path: "/merchant/categories",
     handler: "create",
-    middlewares: [...merchantAuth, validate(createCategorySchema)],
+    middlewares: [
+      ...merchantAuth,
+      uploadCategory.single("image"),
+      parseMultipart,
+      validate(createCategorySchema),
+    ],
   },
   {
     method: "put",
     path: "/merchant/categories/:id",
     handler: "update",
-    middlewares: [...merchantAuth, validate(updateCategorySchema)],
+    middlewares: [
+      ...merchantAuth,
+      uploadCategory.single("image"),
+      parseMultipart,
+      validate(updateCategorySchema),
+    ],
   },
   {
     method: "delete",

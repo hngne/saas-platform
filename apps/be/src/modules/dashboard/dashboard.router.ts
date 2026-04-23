@@ -32,6 +32,18 @@ export default createRouter(controller, [
   },
   {
     method: "get",
+    path: "/merchant/dashboard/order-status",
+    handler: "getOrderStatus",
+    middlewares: [...merchantAuth],
+  },
+  {
+    method: "get",
+    path: "/merchant/dashboard/recent-orders",
+    handler: "getRecentOrders",
+    middlewares: [...merchantAuth],
+  },
+  {
+    method: "get",
     path: "/merchant/dashboard/export-excel",
     handler: "exportExcel",
     middlewares: [...merchantAuth],

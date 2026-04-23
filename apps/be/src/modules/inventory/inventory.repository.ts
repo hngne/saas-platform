@@ -1,5 +1,6 @@
 import { PrismaClient as RetailClient } from "../../../generated/retail-client";
 import { buildPaginationMeta } from "@/shared/utils/pagination.util";
+import { getCategoryScopeIds } from "@/shared/utils/category.util";
 import { removeVietnameseTones } from "@/shared/utils/string.util";
 import {
   AdjustInventoryDto,
@@ -12,40 +13,56 @@ const LOW_STOCK_THRESHOLD = 5;
 export class InventoryRepository {
   constructor(private db: RetailClient) {}
 
-  async findAll(filter: InventoryFilterDto) {
-    const { page, limit, search, category_id, low_stock, sort_order } = filter;
+  private buildWhere(filter: Pick<
+    InventoryFilterDto,
+    "search" | "category_id" | "low_stock"
+  >) {
+    const { search, low_stock } = filter;
 
-    const where: any = {
-      product: { deleted_at: null },
-      ...(low_stock === true && { stock: { lte: LOW_STOCK_THRESHOLD } }),
-      ...(category_id && { product: { category_id } }),
-      ...(search && {
-        product: {
+    return {
+      product: {
+        deleted_at: null,
+        ...(search && {
           search_name: { contains: removeVietnameseTones(search) },
-        },
-      }),
+        }),
+      },
+      ...(low_stock === true && { stock: { lte: LOW_STOCK_THRESHOLD } }),
     };
+  }
+
+  private buildVariantInclude() {
+    return {
+      product: {
+        select: {
+          id: true,
+          name: true,
+          category: { select: { id: true, name: true } },
+          images: { take: 1, orderBy: { sort_order: "asc" as const } },
+        },
+      },
+      variant_values: {
+        include: {
+          attribute_value: {
+            include: { attribute: true },
+          },
+        },
+      },
+    };
+  }
+
+  async findAll(filter: InventoryFilterDto) {
+    const { page, limit, sort_order } = filter;
+    const categoryIds = await getCategoryScopeIds(this.db, filter.category_id);
+    const where: any = this.buildWhere(filter);
+
+    if (categoryIds.length) {
+      where.product.category_id = { in: categoryIds };
+    }
 
     const [data, total] = await Promise.all([
       this.db.productVariant.findMany({
         where,
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              category: { select: { id: true, name: true } },
-              images: { take: 1, orderBy: { sort_order: "asc" } },
-            },
-          },
-          variant_values: {
-            include: {
-              attribute_value: {
-                include: { attribute: true },
-              },
-            },
-          },
-        },
+        include: this.buildVariantInclude(),
         orderBy: { stock: sort_order },
         skip: (page - 1) * limit,
         take: limit,
@@ -54,6 +71,21 @@ export class InventoryRepository {
     ]);
 
     return { data, meta: buildPaginationMeta(total, page, limit) };
+  }
+
+  async findAllForExport(filter: InventoryFilterDto) {
+    const categoryIds = await getCategoryScopeIds(this.db, filter.category_id);
+    const where: any = this.buildWhere(filter);
+
+    if (categoryIds.length) {
+      where.product.category_id = { in: categoryIds };
+    }
+
+    return this.db.productVariant.findMany({
+      where,
+      include: this.buildVariantInclude(),
+      orderBy: [{ stock: filter.sort_order }, { updated_at: "desc" as const }],
+    });
   }
 
   async findVariantById(id: string) {
@@ -65,6 +97,7 @@ export class InventoryRepository {
             id: true,
             name: true,
             category: { select: { id: true, name: true } },
+            images: { take: 1, orderBy: { sort_order: "asc" } },
           },
         },
         variant_values: {
@@ -136,7 +169,7 @@ export class InventoryRepository {
     const beforeStock = variant.stock;
     let afterStock: number;
 
-    if (dto.type === "IN") {
+    if (dto.type === "IN" || dto.type === "RETURN") {
       afterStock = beforeStock + dto.quantity;
     } else if (dto.type === "OUT") {
       afterStock = beforeStock - dto.quantity;
@@ -159,7 +192,7 @@ export class InventoryRepository {
           quantity: dto.quantity,
           before_stock: beforeStock,
           after_stock: afterStock,
-          reference_type: "MANUAL",
+          reference_type: dto.type === "RETURN" ? "RETURN" : "MANUAL",
           note: dto.note,
         },
       }),

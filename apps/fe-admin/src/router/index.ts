@@ -46,8 +46,12 @@ const router = createRouter({
 });
 
 // ─── Navigation Guard ──────────────────────────────
-router.beforeEach((to, _from) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore();
+
+  if (!authStore.hasBootstrapped) {
+    await authStore.bootstrapAuth();
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
     return { name: "login" };

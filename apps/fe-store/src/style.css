@@ -3,24 +3,34 @@
 @import "primeicons/primeicons.css";
 
 :root {
-  --primary: #ff6b2b;
-  --primary-light: #ff8f5e;
-  --primary-dark: #e55a1f;
-  --gold: #ffd700;
-  --bg-page: #f8f9fb;
+  --primary: #FF6B2B;
+  --primary-dark: #E05A22;
+  --primary-light: #FFF9F5;
+  --gold: #FFD700;
+  --gradient: linear-gradient(to right, #FF6B2B, #FFD700);
+  --bg-page: #FFF9F5;
   --bg-sidebar: #1a1a2e;
   --bg-card: #ffffff;
-  --text-primary: #1a1a2e;
-  --text-muted: #6b7280;
+  --text-primary: #111827;
+  --text-muted: #6B7280;
   --text-light: #9ca3af;
-  --border: #e5e7eb;
+  --border: #E5E7EB;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
   --info: #3b82f6;
-  --sidebar-width: 250px;
+  --sidebar-width: 260px;
   --sidebar-collapsed: 68px;
   --header-height: 64px;
+  --page-title-size: clamp(1.65rem, 2vw, 1.9rem);
+  --page-title-mobile-size: 1.4rem;
+  --page-title-letter-spacing: -0.03em;
+  --page-subtitle-size: 0.88rem;
+  --page-subtitle-line-height: 1.7;
+  --create-btn-height: 44px;
+  --create-btn-radius: 10px;
+  --create-btn-padding-x: 20px;
+  --create-btn-font-size: 0.88rem;
 }
 
 /* ─── Base Reset ────────────────────────────────────────── */
@@ -79,6 +89,42 @@ body {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: var(--page-title-size);
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: var(--page-title-letter-spacing);
+}
+
+.page-subtitle {
+  margin-top: 6px;
+  max-width: 680px;
+  font-size: var(--page-subtitle-size);
+  line-height: var(--page-subtitle-line-height);
+  color: var(--text-light);
+}
+
+.page-footer,
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid #f1f5f9;
+  color: var(--text-light);
+  font-size: 0.82rem;
 }
 
 /* ─── PrimeVue Global Overrides ─────────────────────────── */
@@ -157,7 +203,7 @@ body {
   background: linear-gradient(
     135deg,
     var(--primary),
-    var(--primary-light)
+    var(--gold)
   ) !important;
   border: none !important;
   color: #fff !important;
@@ -170,6 +216,39 @@ body {
   box-shadow: 0 8px 25px rgba(255, 107, 43, 0.35);
 }
 .btn-gradient:active {
+  transform: translateY(0);
+}
+
+.btn-create-unified,
+.btn-create-unified.p-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--create-btn-height);
+  padding: 0 var(--create-btn-padding-x);
+  background: var(--primary) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--create-btn-radius) !important;
+  font-size: var(--create-btn-font-size) !important;
+  font-weight: 700 !important;
+  line-height: 1;
+  white-space: nowrap;
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 14px rgba(255, 107, 43, 0.2);
+}
+
+.btn-create-unified:hover,
+.btn-create-unified.p-button:hover {
+  background: var(--primary-dark) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(255, 107, 43, 0.28);
+}
+
+.btn-create-unified:active,
+.btn-create-unified.p-button:active {
   transform: translateY(0);
 }
 
@@ -249,6 +328,27 @@ body {
 @media (max-width: 768px) {
   .app-card {
     border-radius: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .page-title {
+    font-size: var(--page-title-mobile-size);
+  }
+
+  .page-footer,
+  .table-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :root {
+    --create-btn-height: 42px;
+    --create-btn-padding-x: 18px;
   }
 
   .p-datatable-wrapper {

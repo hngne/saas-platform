@@ -51,4 +51,10 @@ export class OrderController {
       .status(200)
       .json(APIResponse.OK("Lấy thống kê đơn hàng thành công", data));
   };
+  getSummary = async (req: Request, res: Response) => {
+    const data = await this.getService(req).getSummary();
+    res
+      .status(200)
+      .json(APIResponse.OK("Lay tong quan don hang thanh cong", data));
+  };
 }

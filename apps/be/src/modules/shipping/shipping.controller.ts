@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { ShippingService } from "./shipping.service";
 import { getTenantDB } from "@/configs/tenant-db";
 import { APIResponse } from "@/shared/utils/response.util";
+import { CacheService } from "@/configs/cache.service";
+
+const cache = new CacheService();
 import { BadRequestException } from "@/shared/exceptions";
 import { toggleActiveSchema } from "./shipping.validator";
 
@@ -38,6 +41,7 @@ export class ShippingController {
 
   create = async (req: Request, res: Response) => {
     const data = await this.getService(req).create(req.body);
+    await cache.delPattern(`shipping:${req.user!.tenantId!}:*`);
     res
       .status(201)
       .json(APIResponse.Created("Tạo phương thức vận chuyển thành công", data));
@@ -46,6 +50,7 @@ export class ShippingController {
   update = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
     const data = await this.getService(req).update(id, req.body);
+    await cache.delPattern(`shipping:${req.user!.tenantId!}:*`);
     res
       .status(200)
       .json(APIResponse.OK("Cập nhật phương thức vận chuyển thành công", data));
@@ -54,6 +59,7 @@ export class ShippingController {
   delete = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
     await this.getService(req).delete(id);
+    await cache.delPattern(`shipping:${req.user!.tenantId!}:*`);
     res
       .status(200)
       .json(APIResponse.OK("Xóa phương thức vận chuyển thành công"));
@@ -63,6 +69,7 @@ export class ShippingController {
     const id = getParam(req, "id");
     const { is_active } = toggleActiveSchema.parse(req.body);
     await this.getService(req).toggleActive(id, is_active);
+    await cache.delPattern(`shipping:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Cập nhật trạng thái thành công"));
   };
 }

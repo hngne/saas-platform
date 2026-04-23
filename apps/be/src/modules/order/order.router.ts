@@ -20,6 +20,12 @@ export default createRouter(controller, [
   },
   {
     method: "get",
+    path: "/merchant/orders/summary",
+    handler: "getSummary",
+    middlewares: [...merchantAuth],
+  },
+  {
+    method: "get",
     path: "/merchant/orders/:id",
     handler: "getById",
     middlewares: [...merchantAuth],

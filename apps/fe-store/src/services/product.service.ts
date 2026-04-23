@@ -27,6 +27,7 @@ export interface ProductVariant {
 export interface Product {
   id: string
   name: string
+  slug?: string | null
   description?: string | null
   base_price: number
   category_id?: string | null
@@ -51,13 +52,76 @@ export interface ProductFilter {
   sort_order?: 'asc' | 'desc'
 }
 
+type RawProductImage = ProductImage & { url?: string | null }
+type RawVariantAttributeValue = {
+  id?: string
+  attribute_value?: {
+    id: string
+    value: string
+    color_hex?: string | null
+    attribute?: { id: string; name: string }
+  }
+}
+type RawProductVariant = ProductVariant & {
+  variant_values?: RawVariantAttributeValue[]
+}
+type RawProduct = Product & {
+  images?: RawProductImage[]
+  variants?: RawProductVariant[]
+}
+
+const normalizeImage = (image: RawProductImage): ProductImage => ({
+  ...image,
+  image_url: image.image_url || image.url || '',
+})
+
+const normalizeVariant = (variant: RawProductVariant): ProductVariant => ({
+  ...variant,
+  attribute_values: variant.attribute_values
+    || variant.variant_values?.map((item) => ({
+      id: item.attribute_value?.id || item.id || '',
+      value: item.attribute_value?.value || '',
+      color_hex: item.attribute_value?.color_hex || null,
+      attribute: item.attribute_value?.attribute,
+    }))
+    || [],
+})
+
+const normalizeProduct = (product: RawProduct): Product => ({
+  ...product,
+  images: (product.images || []).map(normalizeImage),
+  variants: (product.variants || []).map(normalizeVariant),
+})
+
+const normalizeProductListResponse = (payload: any) => {
+  if (Array.isArray(payload?.data)) {
+    payload.data = payload.data.map(normalizeProduct)
+    return payload
+  }
+
+  if (Array.isArray(payload?.items)) {
+    payload.items = payload.items.map(normalizeProduct)
+    return payload
+  }
+
+  if (Array.isArray(payload)) {
+    return payload.map(normalizeProduct)
+  }
+
+  return payload
+}
+
 export const productService = {
-  getAll(params?: ProductFilter) {
-    return api.get('/merchant/products', { params })
+  async getAll(params?: ProductFilter) {
+    const response = await api.get('/merchant/products', { params })
+    response.data.data = normalizeProductListResponse(response.data.data)
+    return response
   },
 
-  getById(id: string) {
-    return api.get(`/merchant/products/${id}`)
+  async getById(id: string) {
+    const response = await api.get(`/merchant/products/${id}`)
+    response.data.data = normalizeProduct(response.data.data)
+    return response
   },
 
   // multipart/form-data upload
@@ -67,7 +131,13 @@ export const productService = {
     })
   },
 
-  update(id: string, dto: { name?: string; description?: string | null; base_price?: number; category_id?: string | null; material?: string | null }) {
+  update(id: string, dto: { name?: string; description?: string | null; base_price?: number; category_id?: string | null; material?: string | null } | FormData) {
+    if (dto instanceof FormData) {
+      return api.put(`/merchant/products/${id}`, dto, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    }
+
     return api.put(`/merchant/products/${id}`, dto)
   },
 
@@ -75,25 +145,33 @@ export const productService = {
     return api.delete(`/merchant/products/${id}`)
   },
 
-  toggleActive(id: string) {
-    return api.patch(`/merchant/products/${id}/toggle`)
+  toggleActive(id: string, is_active: boolean) {
+    return api.patch(`/merchant/products/${id}/toggle`, { is_active })
   },
 
   // Variants
-  addVariant(productId: string, dto: { sku_code?: string; price?: number; stock?: number; image_url?: string; attribute_value_ids: string[] }) {
+  addVariant(productId: string, dto: { sku_code?: string | null; price?: number | null; stock?: number; image_url?: string | null; attribute_value_ids: string[] }) {
     return api.post(`/merchant/products/${productId}/variants`, dto)
   },
 
-  updateVariant(productId: string, variantId: string, dto: { sku_code?: string; price?: number; stock?: number; image_url?: string }) {
+  updateVariant(productId: string, variantId: string, dto: { sku_code?: string | null; price?: number | null; stock?: number; image_url?: string | null; attribute_value_ids?: string[] }) {
     return api.put(`/merchant/products/${productId}/variants/${variantId}`, dto)
+  },
+
+  uploadVariantImage(file: File) {
+    const formData = new FormData()
+    formData.append('image', file)
+    return api.post('/upload/product', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
 
   deleteVariant(productId: string, variantId: string) {
     return api.delete(`/merchant/products/${productId}/variants/${variantId}`)
   },
 
-  toggleVariant(productId: string, variantId: string) {
-    return api.patch(`/merchant/products/${productId}/variants/${variantId}/toggle`)
+  toggleVariant(productId: string, variantId: string, is_active: boolean) {
+    return api.patch(`/merchant/products/${productId}/variants/${variantId}/toggle`, { is_active })
   },
 
   // Images

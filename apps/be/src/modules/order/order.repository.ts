@@ -1,6 +1,7 @@
 import { PrismaClient as RetailClient } from "../../../generated/retail-client";
 import { buildPaginationMeta } from "@/shared/utils/pagination.util";
-import { OrderFilterDto, UpdateOrderStatusDto } from "./order.validator";
+import { OrderFilterDto, OrderStatus } from "./order.validator";
+import { randomUUID } from "crypto";
 
 export class OrderRepository {
   constructor(private db: RetailClient) {}
@@ -119,11 +120,36 @@ export class OrderRepository {
 
   async updateStatus(
     id: string,
-    order_status: UpdateOrderStatusDto["order_status"],
+    order_status: OrderStatus,
+    payment_status?: "PENDING" | "PAID" | "FAILED" | "REFUNDED" | "EXPIRED",
   ) {
-    return this.db.order.update({
-      where: { id },
-      data: { order_status },
+    return this.db.$transaction(async (tx) => {
+      const order = await tx.order.update({
+        where: { id },
+        data: payment_status ? { order_status, payment_status } : { order_status },
+      });
+
+      if (payment_status) {
+        const paidAt = payment_status === "PAID" ? new Date() : null;
+
+        await tx.payment.upsert({
+          where: { order_id: id },
+          create: {
+            id: randomUUID(),
+            order_id: id,
+            method: order.payment_method,
+            status: payment_status,
+            amount: order.total,
+            paid_at: paidAt,
+          },
+          update: {
+            status: payment_status,
+            paid_at: paidAt,
+          },
+        });
+      }
+
+      return order;
     });
   }
 
@@ -175,7 +201,7 @@ export class OrderRepository {
   }
 
   async countByStatus() {
-    const [pending, processing, shipped, delivered, cancelled] =
+    const [pending, processing, shipped, delivered, completed, cancelled] =
       await Promise.all([
         this.db.order.count({
           where: { order_status: "PENDING", deleted_at: null },
@@ -190,9 +216,94 @@ export class OrderRepository {
           where: { order_status: "DELIVERED", deleted_at: null },
         }),
         this.db.order.count({
+          where: { order_status: "COMPLETED", deleted_at: null },
+        }),
+        this.db.order.count({
           where: { order_status: "CANCELLED", deleted_at: null },
         }),
       ]);
-    return { pending, processing, shipped, delivered, cancelled };
+    return { pending, processing, shipped, delivered, completed, cancelled };
+  }
+
+  async getSummary() {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+    const [
+      pending,
+      processing,
+      shipped,
+      delivered,
+      completed,
+      cancelled,
+      totalOrders,
+      newOrdersToday,
+      todayRevenueAggregate,
+    ] = await Promise.all([
+      this.db.order.count({
+        where: { order_status: "PENDING", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { order_status: "PROCESSING", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { order_status: "SHIPPED", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { order_status: "DELIVERED", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { order_status: "COMPLETED", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { order_status: "CANCELLED", deleted_at: null },
+      }),
+      this.db.order.count({
+        where: { deleted_at: null },
+      }),
+      this.db.order.count({
+        where: {
+          deleted_at: null,
+          created_at: {
+            gte: todayStart,
+            lt: tomorrowStart,
+          },
+        },
+      }),
+      this.db.order.aggregate({
+        where: {
+          deleted_at: null,
+          payment_status: "PAID",
+          order_status: { not: "CANCELLED" },
+          created_at: {
+            gte: todayStart,
+            lt: tomorrowStart,
+          },
+        },
+        _sum: {
+          total: true,
+        },
+      }),
+    ]);
+
+    return {
+      total_orders: totalOrders,
+      pending_orders: pending,
+      processing_orders: processing,
+      shipped_orders: shipped,
+      delivered_orders: delivered,
+      completed_orders: completed,
+      cancelled_orders: cancelled,
+      urgent_orders: pending + processing,
+      new_orders_today: newOrdersToday,
+      today_revenue: Number(todayRevenueAggregate._sum.total || 0),
+      cancellation_rate:
+        totalOrders > 0
+          ? Number(((cancelled / totalOrders) * 100).toFixed(1))
+          : 0,
+    };
   }
 }

@@ -54,4 +54,8 @@ export class VoucherService {
     await this.getById(id);
     return this.repo.toggleActive(id, is_active);
   };
+
+  getSummary = async () => {
+    return this.repo.getSummary();
+  };
 }

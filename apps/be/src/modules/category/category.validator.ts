@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const createCategorySchema = z.object({
   name: z.string().min(1, "Tên danh mục không được để trống"),
+  slug: z.string().optional(),
   description: z.string().optional(),
   image_url: z.string().optional(),
   parent_id: z.string().uuid().optional().nullable(),

@@ -25,7 +25,7 @@ export class ProductService {
   };
 
   getById = async (id: string) => {
-    const product = await this.repo.findById(id);
+    const product = await this.repo.findByIdentifier(id);
     if (!product) throw new NotFoundException("Sản phẩm không tồn tại");
     return product;
   };
@@ -69,13 +69,16 @@ export class ProductService {
 
     // Tạo variants
     if (dto.has_variant && dto.variants && dto.variants.length > 0) {
-      for (const v of dto.variants) {
+      this.validateVariantCombinations(dto.variants);
+
+      for (let index = 0; index < dto.variants.length; index++) {
+        const v = dto.variants[index];
         await this.repo.createVariant(id, {
-          sku_code: v.sku_code,
-          price: v.price,
+          sku_code: await this.resolveVariantSku(v.sku_code, slug, index),
+          price: v.price ?? dto.base_price,
           stock: v.stock,
-          image_url: v.image_url,
-          attribute_value_ids: v.attribute_value_ids,
+          image_url: v.image_url ?? null,
+          attribute_value_ids: [...new Set(v.attribute_value_ids)],
         });
       }
     } else {
@@ -92,16 +95,24 @@ export class ProductService {
     return this.repo.findById(id);
   };
 
-  update = async (id: string, dto: UpdateProductDto) => {
+  update = async (id: string, dto: UpdateProductDto, files: Express.Multer.File[] = []) => {
     await this.getById(id);
     if (dto.name) {
       const existing = await this.repo.findByName(dto.name, id);
       if (existing) throw new BadRequestException("Tên sản phẩm đã tồn tại");
     }
-    return this.repo.update(id, {
+    const product = await this.repo.update(id, {
       ...dto,
       ...(dto.name && { search_name: removeVietnameseTones(dto.name) }),
     });
+
+    const imageUrls = files.map((f: any) => f.path).filter(Boolean);
+    if (imageUrls.length > 0) {
+      const imageCount = await this.repo.countImages(id);
+      await this.repo.createImages(id, imageUrls, imageCount);
+    }
+
+    return product;
   };
 
   delete = async (id: string) => {
@@ -117,14 +128,23 @@ export class ProductService {
   // ── Variants ──────────────────────────────────
 
   addVariant = async (productId: string, dto: CreateVariantDto) => {
-    await this.getById(productId);
+    const product = await this.getById(productId);
+    const attributeValueIds = [...new Set(dto.attribute_value_ids)];
+
+    this.assertVariantCombinationUnique(product, attributeValueIds);
 
     if (dto.sku_code) {
       const existing = await this.repo.findSkuCode(dto.sku_code);
       if (existing) throw new BadRequestException("SKU code đã tồn tại");
     }
 
-    return this.repo.createVariant(productId, dto);
+    return this.repo.createVariant(productId, {
+      ...dto,
+      sku_code: await this.resolveVariantSku(dto.sku_code, product.slug),
+      price: dto.price ?? Number(product.base_price),
+      image_url: dto.image_url ?? null,
+      attribute_value_ids: attributeValueIds,
+    });
   };
 
   updateVariant = async (
@@ -132,7 +152,7 @@ export class ProductService {
     variantId: string,
     dto: UpdateVariantDto,
   ) => {
-    await this.getById(productId);
+    const product = await this.getById(productId);
     const variant = await this.repo.findVariantById(variantId);
     if (!variant || variant.product_id !== productId) {
       throw new NotFoundException("Biến thể không tồn tại");
@@ -141,7 +161,31 @@ export class ProductService {
       const existing = await this.repo.findSkuCode(dto.sku_code, variantId);
       if (existing) throw new BadRequestException("SKU code đã tồn tại");
     }
-    return this.repo.updateVariant(variantId, dto);
+
+    if (dto.attribute_value_ids !== undefined) {
+      this.assertVariantCombinationUnique(
+        product,
+        [...new Set(dto.attribute_value_ids)],
+        variantId,
+      );
+    }
+
+    return this.repo.updateVariant(variantId, {
+      ...dto,
+      ...(dto.sku_code !== undefined && {
+        sku_code: await this.resolveVariantSku(
+          dto.sku_code,
+          product.slug,
+          undefined,
+          variantId,
+        ),
+      }),
+      ...(dto.price === null && { price: Number(product.base_price) }),
+      ...(dto.image_url === undefined ? {} : { image_url: dto.image_url ?? null }),
+      ...(dto.attribute_value_ids !== undefined && {
+        attribute_value_ids: [...new Set(dto.attribute_value_ids)],
+      }),
+    });
   };
 
   deleteVariant = async (productId: string, variantId: string) => {
@@ -203,5 +247,69 @@ export class ProductService {
       existing = await this.repo.findBySlug(slug);
     }
     return slug;
+  }
+
+  private normalizeSkuCode(skuCode?: string | null) {
+    const normalized = skuCode?.trim();
+    return normalized ? normalized : null;
+  }
+
+  private async resolveVariantSku(
+    skuCode: string | null | undefined,
+    productSlug: string,
+    index = 0,
+    excludeId?: string,
+  ) {
+    const manualSku = this.normalizeSkuCode(skuCode);
+    if (manualSku) {
+      const existing = await this.repo.findSkuCode(manualSku, excludeId);
+      if (existing) throw new BadRequestException("SKU code đã tồn tại");
+      return manualSku;
+    }
+
+    let generated = "";
+    do {
+      const suffix = randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
+      generated = `${productSlug.toUpperCase()}-${index + 1}-${suffix}`;
+    } while (await this.repo.findSkuCode(generated, excludeId));
+
+    return generated;
+  }
+
+  private validateVariantCombinations(variants: CreateProductDto["variants"]) {
+    const seen = new Set<string>();
+
+    for (const variant of variants ?? []) {
+      const key = this.buildVariantCombinationKey(variant.attribute_value_ids);
+      if (seen.has(key)) {
+        throw new BadRequestException("Có biến thể bị trùng tổ hợp thuộc tính");
+      }
+      seen.add(key);
+    }
+  }
+
+  private assertVariantCombinationUnique(
+    product: Awaited<ReturnType<ProductRepository["findByIdentifier"]>>,
+    attributeValueIds: string[],
+    excludeVariantId?: string,
+  ) {
+    const nextKey = this.buildVariantCombinationKey(attributeValueIds);
+
+    const duplicated = product?.variants?.some((variant) => {
+      if (excludeVariantId && variant.id === excludeVariantId) return false;
+
+      const currentIds =
+        variant.variant_values?.map((item: any) => item.attribute_value_id) || [];
+
+      return this.buildVariantCombinationKey(currentIds) === nextKey;
+    });
+
+    if (duplicated) {
+      throw new BadRequestException("Tổ hợp thuộc tính của biến thể đã tồn tại");
+    }
+  }
+
+  private buildVariantCombinationKey(attributeValueIds: string[]) {
+    return [...new Set(attributeValueIds)].sort().join("|");
   }
 }

@@ -1,8 +1,11 @@
 import api from './api'
 
+export type ShippingMethodType = 'DELIVERY' | 'PICKUP'
+
 export interface ShippingMethod {
   id: string
   name: string
+  type: ShippingMethodType
   fee: number
   estimated_days?: number | null
   is_active: boolean
@@ -12,6 +15,7 @@ export interface ShippingMethod {
 
 export interface CreateShippingDto {
   name: string
+  type: ShippingMethodType
   fee: number
   estimated_days?: number | null
   is_active?: boolean

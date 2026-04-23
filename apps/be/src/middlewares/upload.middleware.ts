@@ -1,16 +1,23 @@
 import multer from "multer";
-import { productStorage, storeStorage } from "@/configs/cloudinary";
+import { productStorage, storeStorage, categoryStorage } from "@/configs/cloudinary";
 import { Request, Response, NextFunction } from "express";
 
 export const uploadProduct = multer({
   storage: productStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 8 * 1024 * 1024, // 8MB limit
   },
 });
 
 export const uploadStore = multer({
   storage: storeStorage,
+  limits: {
+    fileSize: 8 * 1024 * 1024, // 8MB limit
+  },
+});
+
+export const uploadCategory = multer({
+  storage: categoryStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -21,7 +28,7 @@ export const handleSingleUpload = (uploader: multer.Multer, fieldName: string) =
     uploader.single(fieldName)(req, res, (err: any) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
-          return res.status(400).json({ message: "File too large (max 5MB)" });
+          return res.status(400).json({ message: "File too large" });
         }
         return res.status(400).json({ message: err.message });
       } else if (err) {

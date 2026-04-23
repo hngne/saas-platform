@@ -4,7 +4,6 @@ import { validate } from "@/middlewares/validator.middleware";
 import { authenticate, requireUserType } from "@/middlewares/auth.middleware";
 import { uploadProduct } from "@/middlewares/upload.middleware";
 import {
-  updateProductSchema,
   createVariantSchema,
   updateVariantSchema,
 } from "./product.validator";
@@ -54,7 +53,7 @@ export default createRouter(controller, [
     method: "put",
     path: "/merchant/products/:id",
     handler: "update",
-    middlewares: [...merchantAuth, validate(updateProductSchema)],
+    middlewares: [...merchantAuth, uploadProductImages],
   },
   {
     method: "delete",

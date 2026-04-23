@@ -29,6 +29,14 @@ export const dashboardService = {
     return api.get('/merchant/dashboard/top-not-selling', { params })
   },
 
+  getOrderStatus() {
+    return api.get('/merchant/dashboard/order-status')
+  },
+
+  getRecentOrders() {
+    return api.get('/merchant/dashboard/recent-orders')
+  },
+
   exportExcel(params?: DashboardFilter) {
     return api.get('/merchant/dashboard/export-excel', {
       params,

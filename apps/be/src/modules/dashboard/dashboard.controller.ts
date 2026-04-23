@@ -46,6 +46,20 @@ export class DashboardController {
       .json(APIResponse.OK("Lấy top sản phẩm không bán được thành công", data));
   };
 
+  getOrderStatus = async (req: Request, res: Response) => {
+    const data = await this.getService(req).getOrderStatus();
+    res
+      .status(200)
+      .json(APIResponse.OK("Lấy phân bố trạng thái đơn hàng thành công", data));
+  };
+
+  getRecentOrders = async (req: Request, res: Response) => {
+    const data = await this.getService(req).getRecentOrders();
+    res
+      .status(200)
+      .json(APIResponse.OK("Lấy đơn hàng gần đây thành công", data));
+  };
+
   exportExcel = async (req: Request, res: Response) => {
     const filter = exportFilterSchema.parse(req.query);
     const buffer = await this.getService(req).exportExcel(filter);

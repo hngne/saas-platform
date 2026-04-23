@@ -14,7 +14,7 @@ const productStorage = new CloudinaryStorage({
   params: {
     folder: "shopflow/products",
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
-    transformation: [{ width: 800, height: 800, crop: "limit" }],
+    transformation: [{ width: 1600, height: 1600, crop: "limit", quality: "auto:best" }],
   } as any,
 });
 
@@ -24,8 +24,18 @@ const storeStorage = new CloudinaryStorage({
   params: {
     folder: "shopflow/stores",
     allowed_formats: ["jpg", "jpeg", "png", "webp", "svg"],
-    transformation: [{ width: 500, height: 500, crop: "limit" }],
+    transformation: [{ width: 2880, height: 1200, crop: "limit", quality: "auto:best" }],
   } as any,
 });
 
-export { cloudinary, productStorage, storeStorage };
+// Storage cho category images
+const categoryStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "shopflow/categories",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ width: 1400, height: 1400, crop: "limit", quality: "auto:best" }],
+  } as any,
+});
+
+export { cloudinary, productStorage, storeStorage, categoryStorage };

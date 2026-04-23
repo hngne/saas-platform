@@ -57,12 +57,17 @@ onMounted(fetchAll)
 
 <template>
   <div>
-    <p class="page-section-label">QUẢN LÝ VOUCHER</p>
+    <section class="page-header">
+      <div>
+        <h1 class="page-title">Quản lý voucher</h1>
+        <p class="page-subtitle">Theo dõi mã giảm giá, hiệu lực, lượt dùng và trạng thái áp dụng của từng voucher.</p>
+      </div>
+
+      <Button label="Thêm voucher" icon="pi pi-plus" class="btn-create-unified" @click="openCreate" />
+    </section>
+
     <div class="filter-bar mb-5">
       <InputText v-model="filter.search" placeholder="Tìm mã voucher..." style="width: 220px" @keyup.enter="fetchAll" />
-      <div class="ml-auto">
-        <Button label="Thêm voucher" icon="pi pi-plus" class="btn-primary" @click="openCreate" />
-      </div>
     </div>
 
     <div class="app-card">

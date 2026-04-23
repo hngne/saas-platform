@@ -2,10 +2,16 @@ import { Request, Response } from "express";
 import { ProductService } from "./product.service";
 import { getTenantDB } from "@/configs/tenant-db";
 import { APIResponse } from "@/shared/utils/response.util";
+import { CacheService } from "@/configs/cache.service";
+
+const cache = new CacheService();
 import {
   productFilterSchema,
   toggleActiveSchema,
+  createVariantSchema,
   createProductSchema,
+  updateProductSchema,
+  updateVariantSchema,
 } from "./product.validator";
 import { BadRequestException, NotFoundException } from "@/shared/exceptions";
 
@@ -58,24 +64,31 @@ export class ProductController {
     const body = createProductSchema.parse(rawBody);
 
     const data = await this.getService(req).create(body, files);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(201).json(APIResponse.Created("Tạo sản phẩm thành công", data));
   };
 
   update = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
+    const files = (req.files as Express.Multer.File[]) || [];
     const body = {
       ...req.body,
       ...(req.body.base_price && {
         base_price: parseFloat(req.body.base_price),
       }),
+      ...(req.body.category_id === "" && { category_id: null }),
+      ...(req.body.description === "" && { description: null }),
+      ...(req.body.material === "" && { material: null }),
     };
-    const data = await this.getService(req).update(id, body);
+    const data = await this.getService(req).update(id, updateProductSchema.parse(body), files);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Cập nhật sản phẩm thành công", data));
   };
 
   delete = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
     await this.getService(req).delete(id);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Xóa sản phẩm thành công"));
   };
 
@@ -83,6 +96,7 @@ export class ProductController {
     const id = getParam(req, "id");
     const { is_active } = toggleActiveSchema.parse(req.body);
     await this.getService(req).toggleActive(id, is_active);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Cập nhật trạng thái thành công"));
   };
 
@@ -90,14 +104,16 @@ export class ProductController {
 
   addVariant = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
-    const data = await this.getService(req).addVariant(id, req.body);
+    const data = await this.getService(req).addVariant(id, createVariantSchema.parse(req.body));
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(201).json(APIResponse.Created("Thêm biến thể thành công", data));
   };
 
   updateVariant = async (req: Request, res: Response) => {
     const id = getParam(req, "id");
     const vid = getParam(req, "vid");
-    const data = await this.getService(req).updateVariant(id, vid, req.body);
+    const data = await this.getService(req).updateVariant(id, vid, updateVariantSchema.parse(req.body));
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Cập nhật biến thể thành công", data));
   };
 
@@ -105,6 +121,7 @@ export class ProductController {
     const id = getParam(req, "id");
     const vid = getParam(req, "vid");
     await this.getService(req).deleteVariant(id, vid);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Xóa biến thể thành công"));
   };
 
@@ -113,6 +130,7 @@ export class ProductController {
     const vid = getParam(req, "vid");
     const { is_active } = toggleActiveSchema.parse(req.body);
     await this.getService(req).toggleVariant(id, vid, is_active);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res
       .status(200)
       .json(APIResponse.OK("Cập nhật trạng thái biến thể thành công"));
@@ -124,6 +142,7 @@ export class ProductController {
     const id = getParam(req, "id");
     const imageId = getParam(req, "imageId");
     await this.getService(req).deleteImage(id, imageId);
+    await cache.delPattern(`products:${req.user!.tenantId!}:*`);
     res.status(200).json(APIResponse.OK("Xóa ảnh thành công"));
   };
 }

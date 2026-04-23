@@ -15,13 +15,34 @@ export interface Attribute {
   values: AttributeValue[]
 }
 
+const normalizeAttribute = (attribute: any): Attribute => ({
+  ...attribute,
+  values: Array.isArray(attribute?.values) ? attribute.values : [],
+})
+
+const normalizeAttributeList = (payload: any): Attribute[] => {
+  const rows = Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload)
+        ? payload
+        : []
+
+  return rows.map(normalizeAttribute)
+}
+
 export const attributeService = {
-  getAll() {
-    return api.get('/merchant/attributes')
+  async getAll() {
+    const response = await api.get('/merchant/attributes')
+    response.data.data = normalizeAttributeList(response.data?.data)
+    return response
   },
 
-  getById(id: string) {
-    return api.get(`/merchant/attributes/${id}`)
+  async getById(id: string) {
+    const response = await api.get(`/merchant/attributes/${id}`)
+    response.data.data = normalizeAttribute(response.data?.data)
+    return response
   },
 
   create(dto: { name: string; values: Array<{ value: string; color_hex?: string | null }> }) {
