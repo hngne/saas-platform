@@ -17,7 +17,7 @@ const onSaleOnly = ref(false);
 const hasVariantOnly = ref(false);
 const minPriceInput = ref("");
 const maxPriceInput = ref("");
-const sort = ref("newest");
+const sort = ref((route.query.sort as string) || "newest");
 const apiProducts = ref<Product[]>([]);
 const apiCategories = ref<Category[]>([]);
 const apiError = ref("");
@@ -143,6 +143,7 @@ const colorOptions = computed(() => {
 const pageTitle = computed(() => {
   if (mode.value === "category") return currentCategory.value?.name || "Danh mục";
   if (mode.value === "search") return `Kết quả cho "${searchQuery.value}"`;
+  if (sort.value === "new" || sort.value === "newest") return "Hàng mới về";
   return "Tất cả sản phẩm";
 });
 
@@ -153,6 +154,9 @@ const subtitle = computed(() => {
   if (mode.value === "search") {
     return `Hiển thị ${visibleProducts.value.length} kết quả phù hợp với từ khóa của bạn.`;
   }
+  if (sort.value === "new" || sort.value === "newest") {
+    return "Cập nhật những mẫu sản phẩm mới nhất vừa cập bến cửa hàng.";
+  }
   return "Tuyển chọn sản phẩm nổi bật từ các danh mục đang bán tại cửa hàng.";
 });
 
@@ -161,10 +165,7 @@ const visibleProducts = computed(() => {
 
   if (!apiProducts.value.length) return [];
 
-  if (mode.value === "search") {
-    const query = searchQuery.value.trim().toLowerCase();
-    list = query ? list.filter((item) => item.name.toLowerCase().includes(query)) : list;
-  }
+  // Tìm kiếm đã được xử lý bởi Backend (search_name), không cần lọc lại ở client
 
   if (mode.value === "category" && currentCategoryScope.value.size > 0 && !loading.value) {
     list = list.filter((item) => currentCategoryScope.value.has(item.category));
@@ -287,6 +288,13 @@ watch(
     selectedCategories.value = category ? [category.slug] : [];
   },
   { immediate: true },
+);
+
+watch(
+  () => route.query.sort,
+  (newSort) => {
+    if (newSort) sort.value = newSort as string;
+  }
 );
 
 watch(
@@ -426,7 +434,7 @@ const handlePriceInput = (field: "min" | "max", event: Event) => {
         </div>
 
         <select v-model="sort" aria-label="Sắp xếp">
-          <option value="newest">Sắp xếp: Mới nhất</option>
+          <option value="new">Sắp xếp: Mới nhất</option>
           <option value="price-asc">Giá tăng dần</option>
           <option value="price-desc">Giá giảm dần</option>
         </select>

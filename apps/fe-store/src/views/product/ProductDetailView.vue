@@ -283,7 +283,7 @@ onMounted(fetchProduct)
 }
 
 .detail-page {
-  max-width: 1280px;
+  width: 100%;
 }
 
 .breadcrumb {

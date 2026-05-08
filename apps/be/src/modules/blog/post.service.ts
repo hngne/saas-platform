@@ -20,6 +20,12 @@ export class PostService {
     return post;
   };
 
+  getByIdentifier = async (identifier: string) => {
+    const post = await this.repo.findByIdentifier(identifier);
+    if (!post) throw new NotFoundException("Bài viết không tồn tại");
+    return post;
+  };
+
   create = async (dto: CreatePostDto, userId: string) => {
     const { tags, ...postData } = dto;
     const slug = await this.repo.generateUniqueSlug(dto.title);
@@ -43,7 +49,6 @@ export class PostService {
 
   incrementView = async (id: string) => {
     await this.getById(id);
-    // Tăng view_count lên 1, dùng cho frontend khi đọc bài
     return this.repo["db"].post.update({
       where: { id },
       data: { view_count: { increment: 1 } },

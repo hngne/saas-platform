@@ -7,6 +7,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 const route = useRoute()
 const mainContentRef = ref<HTMLElement | null>(null)
 const sidebarOpen = ref(false)
+const desktopCollapsed = ref(false)
 const isTablet = ref(false)
 const isMobile = ref(false)
 
@@ -18,6 +19,10 @@ const checkScreen = () => {
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
+}
+
+const toggleDesktopCollapse = () => {
+  desktopCollapsed.value = !desktopCollapsed.value
 }
 
 const closeSidebar = () => {
@@ -59,10 +64,15 @@ onUnmounted(() => {
         'is-mobile': isMobile,
         'is-tablet': isTablet,
         'mobile-open': sidebarOpen && isMobile,
-        'tablet-open': sidebarOpen && isTablet
+        'tablet-open': sidebarOpen && isTablet,
+        'desktop-collapsed': !isMobile && !isTablet && desktopCollapsed
       }"
     >
-      <AppSidebar :collapsed="isTablet && !sidebarOpen" @navigate="closeSidebar" />
+      <AppSidebar
+        :collapsed="(isTablet && !sidebarOpen) || (!isMobile && !isTablet && desktopCollapsed)"
+        @navigate="closeSidebar"
+        @toggle-collapse="toggleDesktopCollapse"
+      />
     </aside>
 
     <!-- Main Content -->
@@ -93,7 +103,12 @@ onUnmounted(() => {
 /* ── Sidebar ─────────────────────── */
 .sidebar-container {
   flex-shrink: 0;
+  width: var(--sidebar-width, 260px);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-container.desktop-collapsed {
+  width: var(--sidebar-collapsed, 68px);
 }
 
 /* Mobile: off-canvas */

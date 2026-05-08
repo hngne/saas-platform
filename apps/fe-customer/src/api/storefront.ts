@@ -67,6 +67,7 @@ interface ApiProduct {
   is_active?: boolean;
   created_at?: string | null;
   variants?: ApiProductVariant[];
+  promotion_details?: any[];
 }
 
 interface ApiPost {
@@ -86,8 +87,16 @@ interface ApiPost {
     name?: string | null;
   } | null;
   blog_category?: {
+    id?: string | null;
+    slug?: string | null;
     name?: string | null;
   } | null;
+}
+
+interface ApiBlogCategory {
+  id?: string;
+  slug?: string | null;
+  name?: string | null;
 }
 
 interface ApiStoreLocation {
@@ -99,6 +108,9 @@ interface ApiStoreLocation {
   opening_hours?: string | null;
   hours?: string | null;
   distance?: string | number | null;
+  distance_km?: number | null;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
   status?: string | null;
   is_active?: boolean;
 }
@@ -277,6 +289,8 @@ const isColorAttribute = (label: string) => {
 
 export const mapProduct = (product: ApiProduct): Product => {
   const id = product.id || normalizeSlug(product.name || "product");
+  const activePromo = product.promotion_details?.[0];
+  const discountPercent = activePromo?.discount_percent || 0;
   const variants =
     product.variants?.map((variant) => {
       const values =
@@ -299,7 +313,7 @@ export const mapProduct = (product: ApiProduct): Product => {
       return {
         id: variant.id || id,
         label: getVariantLabel(variant),
-        price: toNumber(variant.price, toNumber(product.price || product.base_price)),
+        price: toNumber(variant.price, toNumber(product.price || product.base_price)) * (1 - discountPercent / 100),
         stock: toNumber(variant.stock, 0),
         sku: variant.sku_code || variant.sku || undefined,
         image: variant.image_url || undefined,
@@ -315,8 +329,14 @@ export const mapProduct = (product: ApiProduct): Product => {
     product.category?.id ||
     product.category_id ||
     normalizeSlug(categoryName);
-  const price = firstVariant?.price || toNumber(product.price || product.base_price);
-  const oldPrice = toNumber(product.compare_at_price || product.old_price);
+  const price = firstVariant?.price || (toNumber(product.price || product.base_price) * (1 - discountPercent / 100));
+  let oldPrice = toNumber(product.compare_at_price || product.old_price);
+  let badge = product.badge;
+
+  if (discountPercent > 0) {
+    oldPrice = toNumber(product.variants?.[0]?.price) || toNumber(product.price || product.base_price);
+    badge = `-${discountPercent}%`;
+  }
   const totalStock = variants.reduce((sum, variant) => sum + variant.stock, 0);
   const optionGroupMap = new Map<
     string,
@@ -381,7 +401,7 @@ export const mapProduct = (product: ApiProduct): Product => {
     rating: toNumber(product.rating_avg ?? product.rating, 0),
     ratingCount: toNumber(product.review_count || product.rating_count, 0),
     image: images[0] || fallbackImage,
-    badge: product.badge || undefined,
+    badge: badge || undefined,
     colors: swatches.map((swatch) => swatch.value).filter((value) => value.startsWith("#")),
     swatches,
     inStock: variants.length ? totalStock > 0 : product.is_active !== false,
@@ -418,6 +438,10 @@ export const mapPost = (post: ApiPost, index = 0) => ({
   title: post.title || "Bài viết",
   excerpt: post.excerpt || post.summary || "Cập nhật mới nhất từ cửa hàng.",
   category: post.blog_category?.name || post.category?.name || "Blog",
+  categorySlug:
+    post.blog_category?.slug ||
+    post.blog_category?.id ||
+    normalizeSlug(post.blog_category?.name || post.category?.name || "blog"),
   date: formatDate(post.published_at || post.created_at),
   comments: toNumber(post.comment_count, 0),
   image: post.cover_image_url || post.thumbnail_url || post.image_url || fallbackImage,
@@ -431,7 +455,9 @@ export const mapStoreLocation = (storeLocation: ApiStoreLocation, index = 0) => 
   address: storeLocation.address || "Địa chỉ đang cập nhật",
   phone: storeLocation.phone || "Đang cập nhật",
   hours: storeLocation.opening_hours || storeLocation.hours || "08:00 - 22:00",
-  distance: storeLocation.distance ? String(storeLocation.distance) : "",
+  distance: storeLocation.distance_km ? `${storeLocation.distance_km}km` : (storeLocation.distance ? String(storeLocation.distance) : ""),
+  latitude: storeLocation.latitude ? Number(storeLocation.latitude) : null,
+  longitude: storeLocation.longitude ? Number(storeLocation.longitude) : null,
   status: storeLocation.status || (storeLocation.is_active === false ? "CLOSED" : "OPEN"),
   selected: index === 0,
 });
@@ -490,13 +516,28 @@ export const storefrontApi = {
 
   async getBlogCategories() {
     const response = await apiClient.get("/storefront/blog-categories");
-    const payload = unwrapApiData<PaginatedResponse<ApiCategory> | ApiCategory[]>(response);
+    const payload = unwrapApiData<PaginatedResponse<ApiBlogCategory> | ApiBlogCategory[]>(response);
     const list = Array.isArray(payload) ? payload : payload?.data || [];
-    return list.map((category, index) => category.name || mapCategory(category, index).name);
+    return list.map((category, index) => ({
+      id: category.id || `blog-category-${index}`,
+      slug: category.slug || category.id || normalizeSlug(category.name || `blog-category-${index}`),
+      name: category.name || "Danh mục blog",
+    }));
   },
 
   async getStores() {
     const response = await apiClient.get("/storefront/stores");
+    const payload = unwrapApiData<
+      PaginatedResponse<ApiStoreLocation> | ApiStoreLocation[]
+    >(response);
+    const list = Array.isArray(payload) ? payload : payload?.data || [];
+    return list.map(mapStoreLocation);
+  },
+
+  async getNearestStores(lat: number, lng: number) {
+    const response = await apiClient.get("/storefront/stores/nearest", {
+      params: { lat, lng },
+    });
     const payload = unwrapApiData<
       PaginatedResponse<ApiStoreLocation> | ApiStoreLocation[]
     >(response);

@@ -7,8 +7,10 @@ import {
   ArrowRight,
   Banknote,
   CreditCard,
+  Loader2,
   Lock,
   MapPin,
+  Navigation,
   Truck,
   User,
   WalletCards,
@@ -24,6 +26,7 @@ import {
 import { formatVnd } from "@/data/storefront";
 import { useCartStore } from "@/stores/cart.store";
 import { useCustomerAuthStore } from "@/stores/customer-auth.store";
+import { useShopStore } from "@/stores/shop.store";
 import {
   clearPendingVnpayOrder,
   isPendingVnpayOrder,
@@ -34,9 +37,12 @@ import {
 const router = useRouter();
 const cart = useCartStore();
 const auth = useCustomerAuthStore();
+const shop = useShopStore();
 const SELECTED_SHIPPING_ADDRESS_KEY = "selected_shipping_address";
 const { items, subtotal, discount, voucherCode, voucherMessage, voucherApplying } = storeToRefs(cart);
 const pickup = ref(false);
+const pickupLoading = ref(false);
+const nearbyStores = ref<StoreLocation[]>([]);
 const shippingMethods = ref<ShippingMethod[]>([]);
 const pickupStores = ref<StoreLocation[]>([]);
 const selectedShippingAddress = ref<CustomerAddress | null>(null);
@@ -274,6 +280,48 @@ watch(shippingOptions, (options) => {
   if (!selectedShippingId.value && options[0]) selectedShippingId.value = options[0].id;
 });
 
+watch(pickup, async (isPickup) => {
+  if (!isPickup) {
+    nearbyStores.value = [];
+    pickupLoading.value = false;
+    return;
+  }
+
+  pickupLoading.value = true;
+  nearbyStores.value = [];
+  selectedStoreId.value = "";
+
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 })
+    );
+    const nearest = await checkoutApi.getNearestStores(pos.coords.latitude, pos.coords.longitude);
+    const topStores = nearest.slice(0, 3);
+    nearbyStores.value = topStores;
+    pickupStores.value = nearest;
+    if (topStores.length > 0) {
+      selectedStoreId.value = topStores[0]!.id;
+    }
+  } catch {
+    // GPS denied or API error → fallback to all stores, no auto-select
+    nearbyStores.value = pickupStores.value.slice(0, 3);
+    if (nearbyStores.value.length > 0) {
+      selectedStoreId.value = nearbyStores.value[0]!.id;
+    }
+  } finally {
+    pickupLoading.value = false;
+  }
+});
+
+// Đồng bộ cửa hàng đã chọn vào localStorage để PickupSelectView đọc lại được
+watch(selectedStoreId, (id) => {
+  if (!pickup.value || !id) return;
+  const store = pickupStores.value.find(s => s.id === id) || nearbyStores.value.find(s => s.id === id);
+  if (store) {
+    localStorage.setItem("selected_pickup_store", JSON.stringify(store));
+  }
+});
+
 watch(voucherCode, (code) => {
   voucherInput.value = code;
 });
@@ -296,7 +344,7 @@ onMounted(async () => {
 <template>
   <section class="checkout-page">
     <header class="checkout-top sf-container">
-      <RouterLink to="/" class="checkout-brand">The Merchant</RouterLink>
+      <RouterLink to="/" class="checkout-brand">{{ shop.getStoreName() }}</RouterLink>
       <RouterLink to="/cart" class="back-cart"><ArrowLeft :size="16" /> Trở về giỏ hàng</RouterLink>
     </header>
 
@@ -356,10 +404,34 @@ onMounted(async () => {
               <label class="pickup-toggle"><input v-model="pickup" type="checkbox" /> Nhận tại cửa hàng</label>
             </div>
           </div>
-          <RouterLink v-if="pickup" to="/checkout/pickup" class="selected-address">
-            <strong>{{ selectedStore?.name || "Chọn điểm nhận hàng" }}</strong>
-            <span>{{ selectedStore?.address || "Chưa chọn cửa hàng nhận hàng" }}</span>
-          </RouterLink>
+          <div v-if="pickup" class="pickup-inline-block">
+            <div v-if="pickupLoading" class="pickup-finding">
+              <Loader2 :size="20" class="spin-icon" />
+              <span>Đang tìm cửa hàng gần bạn nhất...</span>
+            </div>
+            <template v-else-if="nearbyStores.length">
+              <div class="nearby-store-list">
+                <label
+                  v-for="ns in nearbyStores"
+                  :key="ns.id"
+                  class="nearby-store-option"
+                  :class="{ active: selectedStoreId === ns.id }"
+                >
+                  <input v-model="selectedStoreId" type="radio" :value="ns.id" name="pickup-store" />
+                  <div class="nearby-store-info">
+                    <strong>{{ ns.name }}</strong>
+                    <span>{{ ns.address }}</span>
+                    <small v-if="ns.distance_km != null"><Navigation :size="13" /> {{ ns.distance_km }} km</small>
+                  </div>
+                </label>
+              </div>
+              <RouterLink to="/checkout/pickup" class="see-all-stores-link">Xem tất cả cửa hàng →</RouterLink>
+            </template>
+            <RouterLink v-else to="/checkout/pickup" class="selected-address">
+              <strong>{{ selectedStore?.name || "Chọn điểm nhận hàng" }}</strong>
+              <span>{{ selectedStore?.address || "Chưa chọn cửa hàng nhận hàng" }}</span>
+            </RouterLink>
+          </div>
           <template v-else>
             <RouterLink v-if="selectedShippingAddress" to="/checkout/addresses" class="selected-address delivery-selected">
               <strong>{{ selectedShippingAddress.receiver_name }} - {{ selectedShippingAddress.phone }}</strong>
@@ -586,6 +658,91 @@ onMounted(async () => {
   border-color: color-mix(in srgb, var(--sf-primary) 55%, #fff);
   background: color-mix(in srgb, var(--sf-primary) 10%, #fff);
   color: var(--sf-primary);
+}
+
+.pickup-inline-block {
+  display: grid;
+  gap: 14px;
+}
+
+.pickup-finding {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--sf-primary);
+  font-weight: 700;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.nearby-store-list {
+  display: grid;
+  gap: 10px;
+}
+
+.nearby-store-option {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: start;
+  gap: 14px;
+  padding: 18px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.nearby-store-option.active {
+  border-color: var(--sf-primary);
+  background: color-mix(in srgb, var(--sf-primary) 5%, #fff);
+}
+
+.nearby-store-option input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--sf-primary);
+}
+
+.nearby-store-info {
+  display: grid;
+  gap: 4px;
+}
+
+.nearby-store-info strong {
+  font-size: 15px;
+}
+
+.nearby-store-info span {
+  color: var(--sf-muted);
+  font-size: 14px;
+}
+
+.nearby-store-info small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: var(--sf-primary);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.see-all-stores-link {
+  color: var(--sf-primary);
+  font-weight: 900;
+  font-size: 14px;
+  text-align: right;
 }
 
 .form-grid {

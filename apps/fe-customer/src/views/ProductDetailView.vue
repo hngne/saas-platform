@@ -269,7 +269,7 @@ watch(
           <div class="price-line">
             <strong>{{ formatVnd(currentPrice) }}</strong>
             <del v-if="product.oldPrice">{{ formatVnd(product.oldPrice) }}</del>
-            <span v-if="product.oldPrice" class="price-badge">Giảm giá</span>
+            <span v-if="product.badge" class="price-badge">{{ product.badge }}</span>
           </div>
         </div>
 
@@ -395,7 +395,6 @@ watch(
           <strong>{{ reviewAverage.toFixed(1) }}</strong>
           <span>★★★★★</span>
           <small>Dựa trên {{ reviewTotal || product.ratingCount }} đánh giá</small>
-          <button type="button">Viết đánh giá</button>
         </aside>
         <div class="review-list">
           <article v-for="review in reviews" :key="review.id" class="review-item">

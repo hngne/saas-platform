@@ -1,24 +1,34 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { CalendarDays, MessageSquare, Search } from "lucide-vue-next";
 import { storefrontApi } from "@/api/storefront";
 import { getStoreDisplayName } from "@/utils/storefront-brand";
 
 type BlogPost = Awaited<ReturnType<typeof storefrontApi.getBlogs>>[number];
+type BlogCategory = Awaited<ReturnType<typeof storefrontApi.getBlogCategories>>[number];
+
+const route = useRoute();
+const router = useRouter();
 
 const displayStoreName = computed(getStoreDisplayName);
 const posts = ref<BlogPost[]>([]);
-const apiCategories = ref<string[]>([]);
-const activeCategory = ref("Tất cả");
+const apiCategories = ref<BlogCategory[]>([]);
+const activeCategory = ref("all");
 const keyword = ref("");
 const loading = ref(false);
 const apiError = ref("");
 
-const categories = computed(() => ["Tất cả", ...apiCategories.value.filter(Boolean)]);
+const categories = computed(() => [
+  { slug: "all", name: "Tất cả" },
+  ...apiCategories.value,
+]);
+
 const filteredPosts = computed(() => {
   const query = keyword.value.trim().toLowerCase();
   return posts.value.filter((post) => {
-    const matchesCategory = activeCategory.value === "Tất cả" || post.category === activeCategory.value;
+    const matchesCategory =
+      activeCategory.value === "all" || post.categorySlug === activeCategory.value;
     const matchesSearch =
       !query ||
       post.title.toLowerCase().includes(query) ||
@@ -27,9 +37,31 @@ const filteredPosts = computed(() => {
     return matchesCategory && matchesSearch;
   });
 });
+
 const featured = computed(() => filteredPosts.value[0] || null);
 const blogPosts = computed(() => filteredPosts.value.slice(1));
 const latest = computed(() => posts.value.slice(0, 4));
+
+const syncCategoryFromQuery = () => {
+  const queryCategory = typeof route.query.category === "string" ? route.query.category : "";
+  activeCategory.value = queryCategory || "all";
+};
+
+const setActiveCategory = (slug: string) => {
+  activeCategory.value = slug;
+  router.replace({
+    path: "/blog",
+    query: slug === "all" ? {} : { ...route.query, category: slug },
+  });
+};
+
+watch(
+  () => route.query.category,
+  () => {
+    syncCategoryFromQuery();
+  },
+  { immediate: true },
+);
 
 onMounted(async () => {
   loading.value = true;
@@ -42,6 +74,14 @@ onMounted(async () => {
   if (postsResult.status === "fulfilled") posts.value = postsResult.value;
   if (categoriesResult.status === "fulfilled") apiCategories.value = categoriesResult.value;
   if (postsResult.status === "rejected") apiError.value = "Không tải được blog của shop hiện tại.";
+
+  if (
+    activeCategory.value !== "all" &&
+    !apiCategories.value.some((category) => category.slug === activeCategory.value)
+  ) {
+    setActiveCategory("all");
+  }
+
   loading.value = false;
 });
 </script>
@@ -63,12 +103,12 @@ onMounted(async () => {
     <nav class="category-tabs">
       <button
         v-for="category in categories"
-        :key="category"
+        :key="category.slug"
         type="button"
-        :class="{ active: activeCategory === category }"
-        @click="activeCategory = category"
+        :class="{ active: activeCategory === category.slug }"
+        @click="setActiveCategory(category.slug)"
       >
-        {{ category }}
+        {{ category.name }}
       </button>
     </nav>
 
@@ -111,8 +151,8 @@ onMounted(async () => {
     </div>
 
     <section v-else class="blog-empty">
-      <h2>Shop này chưa có bài viết</h2>
-      <p>Chưa có bài viết nào được xuất bản trong blog của tenant hiện tại.</p>
+      <h2>Không có bài viết phù hợp</h2>
+      <p>Danh mục này hiện chưa có bài viết được xuất bản hoặc chưa khớp với từ khóa tìm kiếm.</p>
     </section>
   </section>
 </template>

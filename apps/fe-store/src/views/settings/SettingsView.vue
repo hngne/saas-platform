@@ -29,13 +29,95 @@ const form = reactive<ShopSettings>({
   primary_color: '',
   secondary_color: '',
   banner_url: '',
+  homepage_sections: '',
 })
 
 const uploading = reactive<Record<string, boolean>>({
   logo: false,
   favicon: false,
   banner: false,
+  promoImage: false,
+  serviceImage: false,
 })
+
+// ── Homepage Sections (Promo + Service) ──
+interface PromoSection {
+  kicker: string
+  title: string
+  description: string
+  image: string
+  link: string
+}
+interface ServiceFeature {
+  title: string
+  description: string
+}
+interface ServiceSection {
+  title: string
+  features: ServiceFeature[]
+  image: string
+  cta_text: string
+  cta_link: string
+}
+
+const defaultPromo: PromoSection = { kicker: '', title: '', description: '', image: '', link: '' }
+const defaultService: ServiceSection = {
+  title: '', features: [{ title: '', description: '' }, { title: '', description: '' }, { title: '', description: '' }],
+  image: '', cta_text: '', cta_link: '',
+}
+
+const promoSection = reactive<PromoSection>({ ...defaultPromo })
+const serviceSection = reactive<ServiceSection>({
+  ...defaultService,
+  features: defaultService.features.map(f => ({ ...f })),
+})
+
+const parseHomepageSections = (json: string) => {
+  try {
+    const parsed = JSON.parse(json)
+    if (parsed.promo) Object.assign(promoSection, { ...defaultPromo, ...parsed.promo })
+    if (parsed.service) {
+      const svc = { ...defaultService, ...parsed.service }
+      Object.assign(serviceSection, svc)
+      serviceSection.features = (svc.features || []).slice(0, 3)
+      while (serviceSection.features.length < 3) serviceSection.features.push({ title: '', description: '' })
+    }
+  } catch { /* keep defaults */ }
+}
+
+const serializeHomepageSections = () => {
+  const hasPromo = promoSection.title || promoSection.image || promoSection.description
+  const hasService = serviceSection.title || serviceSection.image || serviceSection.features.some(f => f.title)
+  if (!hasPromo && !hasService) return ''
+  return JSON.stringify({
+    ...(hasPromo ? { promo: { ...promoSection } } : {}),
+    ...(hasService ? { service: { ...serviceSection } } : {}),
+  })
+}
+
+const uploadSectionImage = async (file: File, target: 'promo' | 'service') => {
+  const key = target === 'promo' ? 'promoImage' : 'serviceImage'
+  uploading[key] = true
+  try {
+    const fd = new FormData()
+    fd.append('image', file)
+    const { data } = await api.post('/upload/store', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const url = data.data?.url || data.data?.image_url || data.url
+    if (url) {
+      if (target === 'promo') promoSection.image = url
+      else serviceSection.image = url
+      toast.success('Thành công', 'Đã tải ảnh lên.')
+    }
+  } catch { toast.error('Lỗi', 'Không thể tải ảnh lên.') }
+  finally { uploading[key] = false }
+}
+
+const handleSectionFileSelect = (event: Event, target: 'promo' | 'service') => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file) uploadSectionImage(file, target)
+  input.value = ''
+}
 
 interface BannerConfig {
   image: string
@@ -103,6 +185,7 @@ const loadSettings = async () => {
   try {
     const data = await settingsService.get()
     Object.assign(form, data)
+    if (data.homepage_sections) parseHomepageSections(data.homepage_sections)
   } catch {
     toast.error('Lỗi', 'Không thể tải cài đặt.')
   } finally {
@@ -148,6 +231,7 @@ const handleFileSelect = (event: Event, field: 'logo_url' | 'favicon_url' | 'ban
 const saveSettings = async () => {
   saving.value = true
   try {
+    form.homepage_sections = serializeHomepageSections()
     const { slug, business_type, ...updatable } = form
     await settingsService.update(updatable)
     toast.success('Thành công', 'Đã lưu cài đặt cửa hàng.')
@@ -324,6 +408,81 @@ onMounted(loadSettings)
         <div v-else class="banner-preview-wide empty">
           <i class="pi pi-images"></i>
           <span>Chưa có banner — Thêm ảnh cho slider trang chủ</span>
+        </div>
+      </div>
+
+      <!-- Homepage Sections CMS -->
+      <div class="upload-section">
+        <h3><i class="pi pi-megaphone"></i> Section Khuyến mãi (Promo)</h3>
+        <p class="color-hint">Banner ngang full-width giữa trang chủ. Khuyến nghị ảnh: 1920×820px. Để trống nếu muốn dùng mặc định.</p>
+        <div class="section-cms-grid">
+          <div class="section-cms-fields">
+            <div class="form-group">
+              <label>Tiêu đề phụ (kicker)</label>
+              <input v-model="promoSection.kicker" placeholder="VD: Khuyến mãi tháng 5" />
+            </div>
+            <div class="form-group">
+              <label>Tiêu đề chính</label>
+              <input v-model="promoSection.title" placeholder="VD: Giảm giá lên đến 50%" />
+            </div>
+            <div class="form-group">
+              <label>Mô tả</label>
+              <textarea v-model="promoSection.description" rows="2" placeholder="Mô tả ngắn gọn..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Link khi click</label>
+              <input v-model="promoSection.link" placeholder="/products hoặc /categories/khuyen-mai" />
+            </div>
+          </div>
+          <div class="section-cms-image">
+            <img v-if="promoSection.image" :src="promoSection.image" alt="Promo" />
+            <div v-else class="preview-empty"><i class="pi pi-image"></i><span>Chưa có ảnh</span></div>
+            <label class="upload-btn" :class="{ disabled: uploading.promoImage }">
+              <i class="pi" :class="uploading.promoImage ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
+              {{ uploading.promoImage ? 'Đang tải...' : 'Chọn ảnh promo' }}
+              <input type="file" accept="image/*" hidden @change="handleSectionFileSelect($event, 'promo')" />
+            </label>
+            <button v-if="promoSection.image" type="button" class="btn-clear-img" @click="promoSection.image = ''">
+              <i class="pi pi-times"></i> Xóa ảnh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-section">
+        <h3><i class="pi pi-building"></i> Section Dịch vụ (Service Band)</h3>
+        <p class="color-hint">Khối nội dung dark phía dưới trang chủ. Để trống nếu muốn dùng nội dung mặc định.</p>
+        <div class="section-cms-grid">
+          <div class="section-cms-fields">
+            <div class="form-group">
+              <label>Tiêu đề chính</label>
+              <input v-model="serviceSection.title" placeholder="VD: Mua sắm thật. Nhận hàng linh hoạt." />
+            </div>
+            <div v-for="(feature, idx) in serviceSection.features" :key="idx" class="feature-row">
+              <span class="feature-index">{{ idx + 1 }}</span>
+              <input v-model="feature.title" :placeholder="`Tính năng ${idx + 1}`" />
+              <input v-model="feature.description" :placeholder="`Mô tả tính năng ${idx + 1}`" />
+            </div>
+            <div class="form-group">
+              <label>Nút CTA</label>
+              <div class="cta-row">
+                <input v-model="serviceSection.cta_text" placeholder="Text nút (VD: Xem cửa hàng)" />
+                <input v-model="serviceSection.cta_link" placeholder="Link (VD: /stores)" />
+              </div>
+            </div>
+          </div>
+          <div class="section-cms-image">
+            <img v-if="serviceSection.image" :src="serviceSection.image" alt="Service" />
+            <div v-else class="preview-empty"><i class="pi pi-image"></i><span>Chưa có ảnh</span></div>
+            <label class="upload-btn" :class="{ disabled: uploading.serviceImage }">
+              <i class="pi" :class="uploading.serviceImage ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
+              {{ uploading.serviceImage ? 'Đang tải...' : 'Chọn ảnh service' }}
+              <input type="file" accept="image/*" hidden @change="handleSectionFileSelect($event, 'service')" />
+            </label>
+            <button v-if="serviceSection.image" type="button" class="btn-clear-img" @click="serviceSection.image = ''">
+              <i class="pi pi-times"></i> Xóa ảnh
+            </button>
+          </div>
         </div>
       </div>
 
@@ -758,6 +917,135 @@ onMounted(loadSettings)
 
 .banner-preview-wide.empty span {
   font-size: 0.82rem;
+}
+
+/* ── Homepage Sections CMS ─────── */
+.section-cms-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.section-cms-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-cms-fields .form-group {
+  gap: 5px;
+}
+
+.section-cms-fields input,
+.section-cms-fields textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+.section-cms-fields input:focus,
+.section-cms-fields textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.1);
+}
+
+.section-cms-image {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.section-cms-image img {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.feature-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.feature-row input {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: #fff;
+}
+
+.feature-row input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.1);
+}
+
+.feature-index {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B2B, #FFD700);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cta-row input {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: #fff;
+}
+
+.cta-row input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.1);
+}
+
+.btn-clear-img {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-clear-img:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
 }
 
 /* ── Colors ──────────────────────── */

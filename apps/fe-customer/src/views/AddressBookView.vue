@@ -163,7 +163,7 @@ onMounted(loadAddresses);
 
     <div class="sf-container address-shell">
       <main class="saved-addresses">
-        <nav class="address-breadcrumb">Trang chủ › Thanh toán › Lựa chọn địa chỉ</nav>
+        <RouterLink to="/checkout" class="back-to-checkout"><ArrowLeft :size="16" /> Quay về thanh toán</RouterLink>
         <h1>Địa chỉ giao hàng</h1>
         <p v-if="errorMessage" class="address-error">{{ errorMessage }}</p>
 
@@ -253,11 +253,13 @@ onMounted(loadAddresses);
   align-items: start;
 }
 
-.address-breadcrumb {
-  color: #6b4e43;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-weight: 800;
+.back-to-checkout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sf-primary);
+  font-weight: 900;
+  font-size: 14px;
 }
 
 .saved-addresses h1 {
@@ -528,7 +530,7 @@ textarea {
     gap: 36px;
   }
 
-  .address-breadcrumb,
+  .back-to-checkout,
   .saved-addresses h1 {
     display: none;
   }

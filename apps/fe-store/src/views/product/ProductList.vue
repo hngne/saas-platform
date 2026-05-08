@@ -382,7 +382,7 @@ onMounted(() => {
 
 <style scoped>
 .product-page {
-  max-width: 1400px;
+  width: 100%;
 }
 
 /* ═══ Header ═══ */

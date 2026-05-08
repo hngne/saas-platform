@@ -13,7 +13,6 @@ export class BlogStorefrontController {
     return new PostService(db);
   }
 
-  /** Danh sách bài viết đã PUBLISHED — cache 10 phút */
   getPosts = async (req: Request, res: Response) => {
     const tid = req.tenant!.id;
     const page = Number(req.query.page) || 1;
@@ -43,15 +42,13 @@ export class BlogStorefrontController {
     res.status(200).json(APIResponse.OK("Lấy danh sách bài viết thành công", data));
   };
 
-  /** Chi tiết bài viết — không cache vì cần ++view_count */
   getPostById = async (req: Request, res: Response) => {
     const service = this.getPostService(req);
-    const data = await service.getById(req.params.id as string);
+    const data = await service.getByIdentifier(req.params.id as string);
     if (!data || data.status !== "PUBLISHED") {
       throw new NotFoundException("Bài viết không tồn tại");
     }
 
-    // Tăng view_count
     const db = getTenantDB(req.tenant!.db_name);
     await db.post.update({
       where: { id: data.id },
@@ -61,7 +58,6 @@ export class BlogStorefrontController {
     res.status(200).json(APIResponse.OK("Lấy bài viết thành công", data));
   };
 
-  /** Danh sách blog categories (active) — cache 30 phút */
   getCategories = async (req: Request, res: Response) => {
     const tid = req.tenant!.id;
     const cacheKey = `blog-categories:${tid}:active`;

@@ -71,12 +71,40 @@ export class ProductRepository {
           lte: max_price,
         },
       }),
-      ...(search && {
-        search_name: {
-          contains: removeVietnameseTones(search),
-        },
-      }),
     };
+
+    // Tìm kiếm: match tên sản phẩm HOẶC sản phẩm thuộc danh mục (kể cả con) có tên khớp
+    if (search) {
+      const normalizedSearch = removeVietnameseTones(search);
+      const allCategories = await this.db.category.findMany({
+        select: { id: true, name: true, parent_id: true },
+      });
+      const matchedParents = allCategories.filter((c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()),
+      );
+
+      // Lấy tất cả ID danh mục con cháu của các danh mục khớp
+      const matchedCategoryIds = new Set<string>();
+      const queue = matchedParents.map((c) => c.id);
+      queue.forEach((id) => matchedCategoryIds.add(id));
+      while (queue.length) {
+        const currentId = queue.shift()!;
+        for (const cat of allCategories) {
+          if (cat.parent_id === currentId && !matchedCategoryIds.has(cat.id)) {
+            matchedCategoryIds.add(cat.id);
+            queue.push(cat.id);
+          }
+        }
+      }
+
+      const orConditions: any[] = [
+        { search_name: { contains: normalizedSearch } },
+      ];
+      if (matchedCategoryIds.size > 0) {
+        orConditions.push({ category_id: { in: Array.from(matchedCategoryIds) } });
+      }
+      where.OR = orConditions;
+    }
 
     const [data, total] = await Promise.all([
       this.db.product.findMany({
@@ -84,6 +112,18 @@ export class ProductRepository {
         include: {
           category: { select: { id: true, name: true } },
           images: { orderBy: { sort_order: "asc" }, take: 1 },
+          promotion_details: {
+            where: {
+              promotion: {
+                is_active: true,
+                OR: [
+                  { start_date: null, end_date: null },
+                  { start_date: { lte: new Date() }, end_date: { gte: new Date() } },
+                ],
+              },
+            },
+            include: { promotion: true },
+          },
           variants: {
             where: { is_active: true },
             select: { id: true, price: true, stock: true },
@@ -116,6 +156,18 @@ export class ProductRepository {
             },
           },
         },
+        promotion_details: {
+          where: {
+            promotion: {
+              is_active: true,
+              OR: [
+                { start_date: null, end_date: null },
+                { start_date: { lte: new Date() }, end_date: { gte: new Date() } },
+              ],
+            },
+          },
+          include: { promotion: true },
+        },
       },
     });
     if (!product) return product;
@@ -131,6 +183,18 @@ export class ProductRepository {
       include: {
         category: true,
         images: { orderBy: { sort_order: "asc" } },
+        promotion_details: {
+          where: {
+            promotion: {
+              is_active: true,
+              OR: [
+                { start_date: null, end_date: null },
+                { start_date: { lte: new Date() }, end_date: { gte: new Date() } },
+              ],
+            },
+          },
+          include: { promotion: true },
+        },
         variants: {
           include: {
             variant_values: {

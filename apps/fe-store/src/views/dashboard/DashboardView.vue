@@ -18,11 +18,11 @@ const dashboardSummary = computed(() => ({
 }))
 
 // Revenue chart
-const revenueType = ref<'day' | 'month' | 'year'>('day')
+const revenueType = ref<'7d' | '30d' | '3m'>('7d')
 const revenueTypeOptions = [
-  { label: '7 ngày', value: 'day' },
-  { label: '30 ngày', value: 'month' },
-  { label: '3 tháng', value: 'year' },
+  { label: '7 ngày', value: '7d' },
+  { label: '30 ngày', value: '30d' },
+  { label: '3 tháng', value: '3m' },
 ]
 const chartOptions = ref<any>({
   chart: {
@@ -179,7 +179,31 @@ const fetchSummary = async () => {
 
 const fetchRevenue = async () => {
   try {
-    const { data } = await dashboardService.getRevenue({ type: revenueType.value })
+    const now = new Date()
+    let from: Date
+    let type: 'day' | 'month' | 'year'
+
+    if (revenueType.value === '7d') {
+      from = new Date(now)
+      from.setDate(from.getDate() - 6)
+      type = 'day'
+    } else if (revenueType.value === '30d') {
+      from = new Date(now)
+      from.setDate(from.getDate() - 29)
+      type = 'day'
+    } else {
+      from = new Date(now)
+      from.setMonth(from.getMonth() - 2)
+      from.setDate(1)
+      type = 'month'
+    }
+    from.setHours(0, 0, 0, 0)
+
+    const { data } = await dashboardService.getRevenue({
+      type,
+      from: from.toISOString(),
+      to: now.toISOString(),
+    })
     const result = data.data
     if (Array.isArray(result)) {
       chartOptions.value = {
@@ -249,7 +273,8 @@ const fetchRecentOrders = async () => {
 const exportFile = async (type: 'excel' | 'pdf') => {
   try {
     const fn = type === 'excel' ? dashboardService.exportExcel : dashboardService.exportPdf
-    const res = await fn({ type: revenueType.value })
+    const exportType = revenueType.value === '3m' ? 'month' : 'day'
+    const res = await fn({ type: exportType })
     const blob = new Blob([res.data])
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -563,7 +588,7 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard {
-  max-width: 1400px;
+  width: 100%;
 }
 
 .dashboard-header {

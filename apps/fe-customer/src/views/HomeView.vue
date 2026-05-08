@@ -39,7 +39,7 @@ const posts = computed(() =>
   apiPosts.value.length ? apiPosts.value.slice(0, 3) : useMockFallback ? fallbackPosts : [],
 );
 const bestSellers = computed(() => products.value.slice(0, 4));
-const newArrivals = computed(() => products.value.slice(4, 8));
+const newArrivals = computed(() => products.value.length > 4 ? products.value.slice(4, 8) : products.value.slice(0, 4));
 const heroProduct = computed(() => products.value[0] || null);
 const heroCategories = computed(() =>
   categories.value.slice(0, 2).map((category) => category.name),
@@ -111,17 +111,30 @@ const heroDescription = computed(() => {
   return "Không gian của shop sẽ hiển thị sản phẩm, bài viết và điểm nhận hàng thật từ backend, sẵn sàng để nối tiếp với CMS về sau.";
 });
 
+const homeSections = computed(() => shopStore.getHomepageSections());
+const cmsPromo = computed(() => homeSections.value.promo);
+const cmsService = computed(() => homeSections.value.service);
+
 const promoTitle = computed(() => {
+  if (cmsPromo.value?.title) return cmsPromo.value.title;
   if (heroProduct.value?.name) return heroProduct.value.name;
   return "Bộ sưu tập nổi bật";
 });
 
 const promoDescription = computed(() => {
+  if (cmsPromo.value?.description) return cmsPromo.value.description;
   const categoryCount = categories.value.length;
   const productCount = products.value.length;
   if (!categoryCount && !productCount) return "Shop này chưa có dữ liệu public để hiển thị.";
   return `${productCount} sản phẩm đang mở bán trong ${categoryCount} danh mục public.`;
 });
+
+const defaultServiceFeatures = [
+  { title: "Giao hàng nhanh chóng", description: "Đơn hàng được xử lý và giao trong thời gian ngắn nhất." },
+  { title: "Sản phẩm chính hãng", description: "Cam kết 100% sản phẩm chất lượng từ nhà cung cấp." },
+  { title: "Hỗ trợ tận tâm", description: `${pickupCount.value || 0} điểm nhận hàng đang hoạt động.` },
+];
+const serviceIcons = [Truck, ShieldCheck, MapPin];
 
 onMounted(async () => {
   const [productResult, categoryResult, blogResult, storeResult] = await Promise.allSettled([
@@ -222,21 +235,19 @@ onMounted(async () => {
     </div>
   </section>
 
-  <section class="promo sf-container">
-    <div class="promo-copy">
-      <p class="sf-kicker">Nội dung có thể thay bằng CMS sau này</p>
-      <h2>{{ promoTitle }}</h2>
-      <p>{{ promoDescription }}</p>
-      <div class="stats">
-        <span>{{ products.length }} sản phẩm</span>
-        <span>{{ categories.length }} danh mục</span>
-        <span>{{ pickupCount }} điểm nhận hàng</span>
+  <section class="promo-banner">
+    <RouterLink :to="cmsPromo?.link || '/products'" class="promo-banner-link">
+      <img
+        :src="cmsPromo?.image || newArrivals[0]?.image || heroProduct?.image || placeholderImage"
+        :alt="promoTitle"
+        class="promo-banner-img"
+      />
+      <div class="promo-banner-overlay">
+        <p class="promo-kicker">{{ cmsPromo?.kicker || '' }}</p>
+        <h2>{{ promoTitle }}</h2>
+        <p class="promo-desc">{{ promoDescription }}</p>
       </div>
-    </div>
-    <img
-      :src="newArrivals[0]?.image || heroProduct?.image || placeholderImage"
-      :alt="promoTitle"
-    />
+    </RouterLink>
   </section>
 
   <section class="sf-section">
@@ -260,35 +271,21 @@ onMounted(async () => {
   <section class="service-band">
     <div class="sf-container service-inner">
       <div class="service-copy">
-        <h2>Mua sắm thật. Nhận hàng linh hoạt.</h2>
+        <h2>{{ cmsService?.title || 'Mua sắm thật. Nhận hàng linh hoạt.' }}</h2>
         <ul>
-          <li>
-            <span><Truck :size="18" /></span>
+          <li v-for="(feature, idx) in (cmsService?.features || defaultServiceFeatures)" :key="idx">
+            <span><component :is="serviceIcons[idx as number] || serviceIcons[0]" :size="18" /></span>
             <div>
-              <strong>Phương thức giao hàng từ backend</strong>
-              <small>Trang checkout sẽ đọc trực tiếp shipping methods public.</small>
-            </div>
-          </li>
-          <li>
-            <span><ShieldCheck :size="18" /></span>
-            <div>
-              <strong>Dữ liệu sản phẩm thật</strong>
-              <small>Home đang lấy sản phẩm, danh mục và blog của tenant hiện tại.</small>
-            </div>
-          </li>
-          <li>
-            <span><MapPin :size="18" /></span>
-            <div>
-              <strong>Store pickup sẵn sàng</strong>
-              <small>{{ pickupCount || 0 }} điểm nhận hàng đang public trên storefront.</small>
+              <strong>{{ feature.title }}</strong>
+              <small>{{ feature.description }}</small>
             </div>
           </li>
         </ul>
-        <RouterLink class="sf-button ghost" to="/stores">Xem cửa hàng gần bạn</RouterLink>
+        <RouterLink class="sf-button ghost" :to="cmsService?.cta_link || '/stores'">{{ cmsService?.cta_text || 'Xem cửa hàng gần bạn' }}</RouterLink>
       </div>
       <div class="service-photo">
         <img
-          :src="featuredStory?.image || heroProduct?.image || placeholderImage"
+          :src="cmsService?.image || featuredStory?.image || heroProduct?.image || placeholderImage"
           :alt="displayStoreName"
         />
         <span><Clock3 :size="15" /> {{ pickupCount || 0 }} điểm nhận hàng đang hoạt động</span>
@@ -456,53 +453,73 @@ onMounted(async () => {
   gap: 24px;
 }
 
-.promo {
-  min-height: 260px;
-  margin-top: 72px;
-  border-radius: var(--sf-radius-sm);
+/* ── Promo Banner (Full-width Canifa-style) ── */
+.promo-banner {
+  margin: 52px auto 0;
+  max-width: var(--sf-max-width, 1260px);
+  padding: 0 var(--sf-gutter, 32px);
+}
+
+.promo-banner-link {
+  display: block;
+  position: relative;
+  border-radius: var(--sf-radius-sm, 14px);
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--sf-dark);
+  text-decoration: none;
   color: #fff;
 }
 
-.promo-copy {
-  padding: 48px;
-}
-
-.promo h2 {
-  margin: 0;
-  font-size: clamp(34px, 4vw, 54px);
-  letter-spacing: -0.05em;
-}
-
-.promo p:not(.sf-kicker) {
-  color: #cbd5e1;
-  margin: 12px 0 0;
-}
-
-.promo img {
+.promo-banner-img {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 21 / 9;
   object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
 }
 
-.stats {
+.promo-banner-link:hover .promo-banner-img {
+  transform: scale(1.03);
+}
+
+.promo-banner-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px 48px;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    transparent 100%
+  );
 }
 
-.stats span {
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  display: inline-flex;
-  align-items: center;
-  font-weight: 800;
+.promo-kicker {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.promo-banner-overlay h2 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.promo-desc {
+  margin: 8px 0 0;
+  max-width: 520px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .new-grid {
@@ -677,8 +694,7 @@ onMounted(async () => {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .service-inner,
-  .promo {
+  .service-inner {
     grid-template-columns: 1fr;
   }
 }
@@ -729,12 +745,17 @@ onMounted(async () => {
     gap: 16px;
   }
 
-  .promo {
-    margin-top: 36px;
+  .promo-banner {
+    margin-top: 28px;
+    padding: 0 16px;
   }
 
-  .promo-copy {
-    padding: 30px 22px;
+  .promo-banner-img {
+    aspect-ratio: 16 / 9;
+  }
+
+  .promo-banner-overlay {
+    padding: 24px 20px;
   }
 
   .service-band {

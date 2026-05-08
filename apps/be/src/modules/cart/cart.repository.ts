@@ -32,6 +32,18 @@ export class CartRepository {
                     slug: true,
                     is_active: true,
                     images: { take: 1, orderBy: { sort_order: "asc" } },
+                    promotion_details: {
+                      where: {
+                        promotion: {
+                          is_active: true,
+                          OR: [
+                            { start_date: null, end_date: null },
+                            { start_date: { lte: new Date() }, end_date: { gte: new Date() } },
+                          ],
+                        },
+                      },
+                      include: { promotion: true },
+                    },
                   },
                 },
                 variant_values: {

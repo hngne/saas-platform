@@ -100,7 +100,14 @@ export class OrderStorefrontService {
         );
       }
 
-      const unitPrice = Number(variant.price ?? variant.product.base_price);
+      let unitPrice = Number(variant.price ?? variant.product.base_price);
+      
+      // Áp dụng khuyến mãi nếu có
+      const activePromo = (variant.product as any).promotion_details?.[0];
+      if (activePromo) {
+        unitPrice = unitPrice * (1 - activePromo.discount_percent / 100);
+      }
+
       subtotal += unitPrice * item.quantity;
 
       orderItems.push({

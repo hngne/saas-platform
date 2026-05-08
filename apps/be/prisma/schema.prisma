@@ -51,6 +51,7 @@ model TenantProfile {
   primary_color     String?  @db.VarChar(20)
   secondary_color   String?  @db.VarChar(20)
   banner_url        String?  @db.VarChar(255)
+  homepage_sections String?  @db.Text
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
   tenant            Tenant   @relation(fields: [tenant_id], references: [id])

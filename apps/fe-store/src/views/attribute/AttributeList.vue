@@ -232,7 +232,7 @@ onMounted(fetchAttributes)
 </template>
 
 <style scoped>
-.attr-page { max-width: 1200px; }
+.attr-page { width: 100%; }
 
 .add-btn { flex-shrink: 0; }
 

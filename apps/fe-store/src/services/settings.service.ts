@@ -15,6 +15,7 @@ export interface ShopSettings {
   primary_color: string
   secondary_color: string
   banner_url: string
+  homepage_sections: string
 }
 
 export const settingsService = {

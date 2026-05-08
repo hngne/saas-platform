@@ -961,7 +961,7 @@ onMounted(fetchData)
 }
 
 .product-form-page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 /* ═══ Breadcrumb ═══ */

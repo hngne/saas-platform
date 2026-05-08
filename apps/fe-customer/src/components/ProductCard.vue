@@ -196,19 +196,23 @@ const cart = useCartStore();
 
 .price-stack {
   min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .price-stack strong {
   display: block;
   color: var(--sf-primary);
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1.1;
   white-space: nowrap;
 }
 
 .price-stack del {
   display: block;
-  margin-top: 4px;
   color: var(--sf-muted);
   font-size: 13px;
 }

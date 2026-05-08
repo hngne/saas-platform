@@ -248,7 +248,7 @@ onMounted(fetchData)
 
 <style scoped>
 .loading-wrap { display: flex; align-items: center; justify-content: center; min-height: 400px; }
-.edit-page { max-width: 1200px; }
+.edit-page { width: 100%; }
 
 /* ═══ Breadcrumb ═══ */
 .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }

@@ -15,7 +15,24 @@ export class OrderStorefrontRepository {
             variant: {
               include: {
                 product: {
-                  select: { id: true, name: true, is_active: true, base_price: true },
+                  select: { 
+                    id: true, 
+                    name: true, 
+                    is_active: true, 
+                    base_price: true,
+                    promotion_details: {
+                      where: {
+                        promotion: {
+                          is_active: true,
+                          OR: [
+                            { start_date: null, end_date: null },
+                            { start_date: { lte: new Date() }, end_date: { gte: new Date() } },
+                          ],
+                        },
+                      },
+                      include: { promotion: true },
+                    },
+                  },
                 },
               },
             },

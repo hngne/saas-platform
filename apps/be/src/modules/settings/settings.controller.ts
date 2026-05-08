@@ -35,6 +35,7 @@ export class SettingsController {
         primary_color: profile?.primary_color || "",
         secondary_color: profile?.secondary_color || "",
         banner_url: profile?.banner_url || "",
+        homepage_sections: profile?.homepage_sections || "",
       }),
     );
   };
@@ -55,6 +56,7 @@ export class SettingsController {
       primary_color,
       secondary_color,
       banner_url,
+      homepage_sections,
     } = req.body;
 
     const data: Record<string, any> = {};
@@ -70,6 +72,7 @@ export class SettingsController {
     if (primary_color !== undefined) data.primary_color = primary_color;
     if (secondary_color !== undefined) data.secondary_color = secondary_color;
     if (banner_url !== undefined) data.banner_url = banner_url;
+    if (homepage_sections !== undefined) data.homepage_sections = homepage_sections;
 
     const profile = await prisma.tenantProfile.upsert({
       where: { tenant_id: tenantId },

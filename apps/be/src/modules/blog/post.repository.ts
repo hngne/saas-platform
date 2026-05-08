@@ -61,6 +61,30 @@ export class PostRepository {
     });
   }
 
+  async findByIdentifier(identifier: string) {
+    return this.db.post.findFirst({
+      where: {
+        deleted_at: null,
+        OR: [{ id: identifier }, { slug: identifier }],
+      },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, tag: true } },
+        comments: {
+          where: { is_visible: true },
+          include: {
+            customer: {
+              select: { id: true, name: true, avatar_url: true },
+            },
+          },
+          orderBy: { created_at: "desc" },
+          take: 20,
+        },
+        _count: { select: { comments: true } },
+      },
+    });
+  }
+
   async findBySlug(slug: string, excludeId?: string) {
     return this.db.post.findFirst({
       where: { slug, ...(excludeId && { id: { not: excludeId } }) },

@@ -15,6 +15,7 @@ export interface ShopProfile {
   phone: string;
   email: string;
   address: string;
+  homepage_sections: string;
 }
 
 export interface ShopBanner {
@@ -159,6 +160,20 @@ export const useShopStore = defineStore("shop", () => {
     }
   }
 
+  function getHomepageSections() {
+    const raw = profile.value?.homepage_sections?.trim();
+    if (!raw) return { promo: null, service: null };
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        promo: parsed.promo || null,
+        service: parsed.service || null,
+      };
+    } catch {
+      return { promo: null, service: null };
+    }
+  }
+
   return {
     profile,
     loaded,
@@ -166,6 +181,7 @@ export const useShopStore = defineStore("shop", () => {
     fetchProfile,
     getStoreName,
     getBanners,
+    getHomepageSections,
     applyTheme,
   };
 });

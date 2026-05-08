@@ -55,6 +55,7 @@ export class StorefrontInfoController {
       phone: profile?.phone || "",
       email: profile?.email || "",
       address: profile?.address || "",
+      homepage_sections: profile?.homepage_sections || "",
     };
 
     await cache.set(cacheKey, data, 600);

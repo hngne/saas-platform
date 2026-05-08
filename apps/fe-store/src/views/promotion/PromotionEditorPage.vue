@@ -11,6 +11,10 @@ import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Dialog from 'primevue/dialog'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Select from 'primevue/select'
 
 interface EditablePromotionDetail {
   product_id: string
@@ -30,7 +34,12 @@ const isEdit = computed(() => !!route.params.id)
 const loading = ref(false)
 const saving = ref(false)
 const allProducts = ref<Product[]>([])
-const productSearch = ref('')
+
+const showProductModal = ref(false)
+const modalSearch = ref('')
+const modalCategory = ref<string | null>(null)
+const modalSelectedProducts = ref<Product[]>([])
+
 const originalDetails = ref<EditablePromotionDetail[]>([])
 
 const form = ref({
@@ -70,21 +79,36 @@ const mapPromotionDetail = (detail: PromotionDetail): EditablePromotionDetail =>
 
 const selectedProductIds = computed(() => new Set(details.value.map((detail) => detail.product_id)))
 
-const filteredProducts = computed(() => {
-  const keyword = productSearch.value.trim().toLowerCase()
-  const candidates = allProducts.value.filter((product) => !selectedProductIds.value.has(product.id))
-
-  if (!keyword) {
-    return candidates.slice(0, 6)
+const productCategories = computed(() => {
+  const cats = new Map()
+  for (const p of allProducts.value) {
+    if (p.category?.id && !cats.has(p.category.id)) {
+      cats.set(p.category.id, p.category)
+    }
   }
+  return Array.from(cats.values())
+})
 
-  return candidates
-    .filter((product) =>
-      product.name.toLowerCase().includes(keyword)
-      || (product.category?.name || '').toLowerCase().includes(keyword)
-      || (product.slug || '').toLowerCase().includes(keyword),
-    )
-    .slice(0, 8)
+const modalFilteredProducts = computed(() => {
+  const keyword = modalSearch.value.trim().toLowerCase()
+  const categoryId = modalCategory.value
+  
+  return allProducts.value.filter((product) => {
+    // Hide already selected products
+    if (selectedProductIds.value.has(product.id)) return false
+    
+    // Filter by category
+    if (categoryId && product.category?.id !== categoryId) return false
+    
+    // Filter by keyword
+    if (keyword) {
+      return product.name.toLowerCase().includes(keyword)
+        || (product.category?.name || '').toLowerCase().includes(keyword)
+        || (product.slug || '').toLowerCase().includes(keyword)
+    }
+    
+    return true
+  })
 })
 
 const selectedCount = computed(() => details.value.length)
@@ -186,9 +210,16 @@ const fetchData = async () => {
   }
 }
 
-const addProduct = (product: Product) => {
-  details.value.unshift(mapProductToDetail(product))
-  productSearch.value = ''
+const addSelectedProducts = () => {
+  for (const product of modalSelectedProducts.value) {
+    if (!selectedProductIds.value.has(product.id)) {
+      details.value.unshift(mapProductToDetail(product))
+    }
+  }
+  showProductModal.value = false
+  modalSelectedProducts.value = []
+  modalSearch.value = ''
+  modalCategory.value = null
 }
 
 const removeDetail = (productId: string) => {
@@ -405,38 +436,10 @@ onMounted(fetchData)
             <div>
               <p class="panel-overline">Sản phẩm áp dụng</p>
             </div>
-            <span class="count-chip">{{ formatNumber(selectedCount) }} sản phẩm</span>
-          </div>
-
-          <div class="search-add-box">
-            <i class="pi pi-search"></i>
-            <InputText
-              v-model="productSearch"
-              class="product-search-input"
-              placeholder="Tìm tên sản phẩm hoặc danh mục để thêm..."
-            />
-          </div>
-
-          <div v-if="productSearch && filteredProducts.length" class="search-results">
-            <button
-              v-for="product in filteredProducts"
-              :key="product.id"
-              type="button"
-              class="result-item"
-              @click="addProduct(product)"
-            >
-              <div class="result-thumb">
-                <img v-if="product.images?.[0]?.image_url" :src="product.images[0].image_url" :alt="product.name" />
-                <i v-else class="pi pi-image"></i>
-              </div>
-
-              <div class="result-copy">
-                <strong>{{ product.name }}</strong>
-                <span>{{ product.category?.name || 'Chưa gắn danh mục' }}</span>
-              </div>
-
-              <span class="result-price">{{ formatVND(product.base_price) }}</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <span class="count-chip">{{ formatNumber(selectedCount) }} sản phẩm</span>
+              <Button label="Chọn sản phẩm" icon="pi pi-plus" size="small" class="btn-gradient" @click="showProductModal = true" />
+            </div>
           </div>
 
           <div v-if="!details.length" class="products-empty">
@@ -521,6 +524,56 @@ onMounted(fetchData)
         </div>
       </article>
     </section>
+
+    <Dialog v-model:visible="showProductModal" modal dismissableMask header="Chọn sản phẩm áp dụng khuyến mãi" :style="{ width: '860px', maxWidth: '96vw' }">
+      <div class="modal-toolbar">
+        <div class="search-input-wrap">
+          <i class="pi pi-search search-icon"></i>
+          <InputText v-model="modalSearch" placeholder="Tìm sản phẩm..." class="w-full pl-10" />
+        </div>
+        <Select v-model="modalCategory" :options="productCategories" optionLabel="name" optionValue="id" placeholder="Tất cả danh mục" showClear class="w-64" />
+      </div>
+
+      <DataTable :value="modalFilteredProducts" v-model:selection="modalSelectedProducts" dataKey="id" :paginator="true" :rows="5" stripedRows>
+        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+        <Column header="Sản phẩm">
+          <template #body="{ data }">
+            <div class="flex items-center gap-3 py-1">
+              <div class="w-10 h-10 rounded overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                <img v-if="data.images?.[0]?.image_url" :src="data.images[0].image_url" class="w-full h-full object-cover" />
+                <i v-else class="pi pi-image text-gray-400"></i>
+              </div>
+              <span class="font-bold text-gray-800">{{ data.name }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="category.name" header="Danh mục">
+          <template #body="{ data }">
+            <span class="text-sm text-gray-600">{{ data.category?.name || '—' }}</span>
+          </template>
+        </Column>
+        <Column header="Giá bán">
+          <template #body="{ data }">
+            <span class="font-bold text-primary">{{ formatVND(data.base_price) }}</span>
+          </template>
+        </Column>
+        <template #empty>
+          <div class="p-4 text-center text-gray-500">
+            Không tìm thấy sản phẩm nào phù hợp
+          </div>
+        </template>
+      </DataTable>
+
+      <template #footer>
+        <div class="flex justify-between items-center w-full mt-2">
+          <span class="text-sm text-gray-500">Đã chọn <strong>{{ modalSelectedProducts.length }}</strong> sản phẩm</span>
+          <div class="flex gap-2">
+            <Button label="Hủy" text severity="secondary" @click="showProductModal = false" />
+            <Button label="Xác nhận thêm" class="btn-gradient" :disabled="!modalSelectedProducts.length" @click="addSelectedProducts" />
+          </div>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -943,6 +996,31 @@ onMounted(fetchData)
 .products-footer span {
   color: #64748b;
   line-height: 1.6;
+}
+
+.modal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  z-index: 1;
+}
+
+.search-input-wrap :deep(.p-inputtext) {
+  padding-left: 40px;
 }
 
 .footer-actions {

@@ -128,6 +128,56 @@ const handleSubmit = async () => {
     saving.value = false
   }
 }
+
+const geocoding = ref(false)
+
+const autoGeocode = async () => {
+  const parts = [form.value.address, form.value.ward, form.value.district, form.value.province].filter(Boolean)
+  if (parts.length === 0) {
+    toast.warn('Vui lòng nhập địa chỉ trước khi lấy tọa độ')
+    return
+  }
+  
+  geocoding.value = true
+  
+  // Tạo danh sách các query dự phòng (fallback)
+  // 1. Full address: Số 1 Xuân Thủy, Phường Dịch Vọng Hậu, Cầu Giấy, Hà Nội
+  // 2. Không có số nhà/địa chỉ chi tiết: Phường Dịch Vọng Hậu, Cầu Giấy, Hà Nội
+  // 3. Chỉ có Quận, Tỉnh: Cầu Giấy, Hà Nội
+  const queries = []
+  queries.push(parts.join(', '))
+  if (form.value.ward || form.value.district || form.value.province) {
+    const withoutAddress = [form.value.ward, form.value.district, form.value.province].filter(Boolean)
+    if (withoutAddress.length > 0 && withoutAddress.join(', ') !== queries[0]) queries.push(withoutAddress.join(', '))
+    
+    const withoutWard = [form.value.district, form.value.province].filter(Boolean)
+    if (withoutWard.length > 0 && withoutWard.join(', ') !== queries[queries.length - 1]) queries.push(withoutWard.join(', '))
+  }
+
+  try {
+    let data = null
+    for (const query of queries) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=vn&limit=1`)
+      const result = await res.json()
+      if (result && result.length > 0) {
+        data = result[0]
+        break
+      }
+    }
+
+    if (data) {
+      form.value.latitude = parseFloat(data.lat)
+      form.value.longitude = parseFloat(data.lon)
+      toast.success('Đã tự động lấy tọa độ thành công!')
+    } else {
+      toast.warn('Không tìm thấy tọa độ trên bản đồ. Vui lòng nhập chi tiết hơn hoặc nhập tay.')
+    }
+  } catch {
+    toast.error('Lỗi', 'Không kết nối được dịch vụ bản đồ.')
+  } finally {
+    geocoding.value = false
+  }
+}
 </script>
 
 <template>
@@ -220,6 +270,19 @@ const handleSubmit = async () => {
             <label>Longitude</label>
             <InputNumber v-model="form.longitude" :minFractionDigits="0" :maxFractionDigits="6" class="w-full" />
           </div>
+        </div>
+
+        <div>
+          <Button 
+            type="button" 
+            label="Tự động lấy tọa độ từ địa chỉ" 
+            icon="pi pi-map-marker"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            :loading="geocoding" 
+            @click="autoGeocode"
+          />
         </div>
 
         <div class="activation-card">

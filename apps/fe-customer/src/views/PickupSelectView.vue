@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, shallowRef, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
-import { ArrowLeft, Check, Clock3, Filter, MapPin, Minus, Navigation, Phone, Plus, Search, Store } from "lucide-vue-next";
+import { ArrowLeft, Check, Clock3, Filter, MapPin, Navigation, Phone, Search, Store } from "lucide-vue-next";
 import { checkoutApi, type StoreLocation } from "@/api/customer";
+import "leaflet/dist/leaflet.css";
+import * as L from "leaflet";
 
 const router = useRouter();
 const search = ref("");
@@ -10,6 +12,11 @@ const stores = ref<StoreLocation[]>([]);
 const selectedId = ref("");
 const geoLoading = ref(false);
 const hasGeoSorted = ref(false);
+
+const mapContainer = ref<HTMLElement | null>(null);
+const leafletMap = shallowRef<L.Map | null>(null);
+const markers = shallowRef<L.Marker[]>([]);
+let mapResizeObserver: ResizeObserver | null = null;
 
 const storeOptions = computed(() => {
   const source = stores.value.map((store) => ({
@@ -21,6 +28,8 @@ const storeOptions = computed(() => {
     status: store.is_active === false ? "CLOSED" : "OPEN",
     distance: store.distance_km != null ? `${store.distance_km} km` : "—",
     distance_km: store.distance_km,
+    latitude: (store as any).latitude ? Number((store as any).latitude) : null,
+    longitude: (store as any).longitude ? Number((store as any).longitude) : null,
   }));
 
   const keyword = search.value.trim().toLowerCase();
@@ -36,12 +45,75 @@ const selectedStore = computed(() => storeOptions.value.find((store) => store.se
 
 const chooseStore = (id: string) => {
   selectedId.value = id;
+  const store = storeOptions.value.find(s => s.id === id);
+  if (store?.latitude && store?.longitude && leafletMap.value) {
+    leafletMap.value.flyTo([store.latitude, store.longitude], 16);
+  }
 };
 
 const confirmPickup = async () => {
   if (!selectedStore.value) return;
   localStorage.setItem("selected_pickup_store", JSON.stringify(selectedStore.value));
   await router.push("/checkout");
+};
+
+const initMap = () => {
+  if (!mapContainer.value || leafletMap.value) return;
+  leafletMap.value = L.map(mapContainer.value).setView([16.047079, 108.20623], 6);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; <a href="https://carto.com/">Carto</a>',
+  }).addTo(leafletMap.value);
+};
+
+const renderMarkers = () => {
+  if (!leafletMap.value) return;
+
+  markers.value.forEach(m => m.remove());
+  markers.value = [];
+
+  const bounds = L.latLngBounds([]);
+  let hasValid = false;
+
+  storeOptions.value.forEach((store) => {
+    if (store.latitude && store.longitude) {
+      hasValid = true;
+      const latLng = L.latLng(store.latitude, store.longitude);
+      bounds.extend(latLng);
+
+      const isActive = store.status === 'OPEN';
+      const color = isActive ? 'var(--sf-primary)' : '#667085';
+      const bg = store.selected ? 'var(--sf-primary)' : (isActive ? '#fff' : '#f1f5f9');
+      const textColor = store.selected ? '#fff' : color;
+
+      const iconHtml = `
+        <div style="
+          background: ${bg}; border: 2px solid ${color}; color: ${textColor};
+          border-radius: 8px; padding: 4px 8px; font-weight: 800; font-size: 12px;
+          white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          transform: translate(-50%, -100%);
+        ">${store.name}</div>
+      `;
+
+      const marker = L.marker(latLng, {
+        icon: L.divIcon({ html: iconHtml, className: 'custom-pin' })
+      }).addTo(leafletMap.value!);
+
+      marker.bindPopup(`<b>${store.name}</b><br>${store.address}`);
+      markers.value.push(marker);
+    }
+  });
+
+  if (hasValid) {
+    leafletMap.value.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+  }
+};
+
+const initializeAndRenderMap = () => {
+  initMap();
+  renderMarkers();
+  if (leafletMap.value) {
+    setTimeout(() => leafletMap.value?.invalidateSize(), 100);
+  }
 };
 
 /** Sắp xếp cửa hàng theo khoảng cách GPS của khách */
@@ -56,6 +128,7 @@ const sortByMyLocation = async () => {
     stores.value = data;
     hasGeoSorted.value = true;
     if (data.length) selectedId.value = data[0]!.id;
+    nextTick(initializeAndRenderMap);
   } catch {
     // Fallback: keep existing order
   } finally {
@@ -66,7 +139,44 @@ const sortByMyLocation = async () => {
 onMounted(async () => {
   const data = await checkoutApi.getStores().catch(() => []);
   stores.value = data;
-  selectedId.value = data[0]?.id || "";
+
+  // Khôi phục cửa hàng đã chọn trước đó từ Checkout
+  try {
+    const stored = localStorage.getItem("selected_pickup_store");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.id && data.some((s: any) => s.id === parsed.id)) {
+        selectedId.value = parsed.id;
+      } else {
+        selectedId.value = data[0]?.id || "";
+      }
+    } else {
+      selectedId.value = data[0]?.id || "";
+    }
+  } catch {
+    selectedId.value = data[0]?.id || "";
+  }
+
+  nextTick(initializeAndRenderMap);
+});
+
+watch(mapContainer, (newVal) => {
+  if (newVal) {
+    if (mapResizeObserver) mapResizeObserver.disconnect();
+    mapResizeObserver = new ResizeObserver(() => {
+      if (leafletMap.value) leafletMap.value.invalidateSize();
+    });
+    mapResizeObserver.observe(newVal);
+  }
+});
+
+watch(selectedId, () => {
+  nextTick(renderMarkers);
+});
+
+onBeforeUnmount(() => {
+  if (mapResizeObserver) mapResizeObserver.disconnect();
+  if (leafletMap.value) leafletMap.value.remove();
 });
 </script>
 
@@ -79,7 +189,9 @@ onMounted(async () => {
     </header>
 
     <div class="sf-container pickup-shell">
-      <nav class="pickup-breadcrumb">Trang chủ › Thanh toán › Chọn điểm nhận hàng</nav>
+      <div class="pickup-top-bar">
+        <RouterLink to="/checkout" class="back-to-checkout"><ArrowLeft :size="16" /> Quay về thanh toán</RouterLink>
+      </div>
       <h1>Chọn điểm nhận hàng tại cửa hàng</h1>
 
       <div class="pickup-layout">
@@ -117,7 +229,7 @@ onMounted(async () => {
               <p><MapPin :size="17" /> {{ storeItem.address }}</p>
               <p><Phone :size="17" /> {{ storeItem.phone }} <Clock3 :size="17" /> {{ storeItem.hours }}</p>
               <div class="store-actions">
-                <a>Xem bản đồ →</a>
+                <a href="#" @click.prevent="chooseStore(storeItem.id)">Xem bản đồ →</a>
                 <button type="button" :disabled="storeItem.status === 'CLOSED'" @click="chooseStore(storeItem.id)">
                   <Check v-if="storeItem.selected" :size="17" />
                   {{ storeItem.selected ? "Đã chọn" : "Chọn" }}
@@ -132,15 +244,7 @@ onMounted(async () => {
         </aside>
 
         <section class="map-panel" aria-label="Bản đồ cửa hàng">
-          <div class="map-shape">
-            <span class="pin pin-main"><Store :size="24" /></span>
-            <span class="pin pin-secondary"></span>
-            <strong>{{ selectedStore?.name || "The Merchant" }}</strong>
-          </div>
-          <div class="map-controls">
-            <button type="button" aria-label="Phóng to"><Plus :size="28" /></button>
-            <button type="button" aria-label="Thu nhỏ"><Minus :size="28" /></button>
-          </div>
+          <div ref="mapContainer" class="leaflet-map-container"></div>
         </section>
       </div>
     </div>
@@ -163,11 +267,22 @@ onMounted(async () => {
   display: none;
 }
 
-.pickup-breadcrumb {
-  color: #6b4e43;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-weight: 800;
+.pickup-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+
+.back-to-checkout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sf-primary);
+  font-weight: 900;
+  font-size: 14px;
 }
 
 .pickup-shell > h1 {
@@ -361,78 +476,17 @@ onMounted(async () => {
 
 .map-panel {
   min-height: 760px;
-  border: 1px solid #314253;
   border-radius: 8px;
-  background: #66757c;
-  position: relative;
   overflow: hidden;
+  position: relative;
 }
 
-.map-panel::before {
-  content: "";
-  position: absolute;
-  inset: 12% 8%;
-  background: #c9ead1;
-  clip-path: polygon(10% 50%, 23% 44%, 27% 28%, 48% 30%, 59% 21%, 83% 29%, 94% 48%, 82% 65%, 69% 75%, 58% 93%, 44% 78%, 29% 70%, 15% 65%);
-  opacity: 0.88;
-}
-
-.map-shape {
-  position: absolute;
-  inset: 0;
-}
-
-.pin {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--sf-primary);
-  color: #fff;
-  box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.8);
-}
-
-.pin-main {
-  left: 50%;
-  top: 54%;
-  width: 42px;
-  height: 42px;
-}
-
-.pin-secondary {
-  left: 61%;
-  top: 34%;
-  width: 18px;
-  height: 18px;
-}
-
-.map-shape strong {
-  position: absolute;
-  left: 38%;
-  top: 49%;
-  padding: 12px 22px;
-  border-radius: 4px;
-  background: var(--sf-primary);
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.map-controls {
-  position: absolute;
-  right: 28px;
-  bottom: 28px;
-  display: grid;
-  gap: 10px;
-}
-
-.map-controls button {
-  width: 52px;
-  height: 52px;
-  border: none;
-  border-radius: 5px;
-  background: #fff;
+.leaflet-map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 760px;
+  position: relative;
+  z-index: 1;
 }
 
 .pickup-confirm {
@@ -445,6 +499,10 @@ onMounted(async () => {
   }
 
   .map-panel {
+    min-height: 420px;
+  }
+
+  .leaflet-map-container {
     min-height: 420px;
   }
 }
@@ -468,7 +526,7 @@ onMounted(async () => {
     font-size: 23px;
   }
 
-  .pickup-breadcrumb,
+  .pickup-top-bar,
   .pickup-shell > h1,
   .store-filter,
   .map-panel {

@@ -269,7 +269,7 @@ onMounted(fetchCategories)
 </template>
 
 <style scoped>
-.cat-page { max-width: 1200px; }
+.cat-page { width: 100%; }
 
 /* ═══ Header ═══ */
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 16px; }

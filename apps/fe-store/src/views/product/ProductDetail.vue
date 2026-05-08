@@ -216,7 +216,7 @@ onMounted(fetchProduct)
   justify-content: center;
   min-height: 400px;
 }
-.detail-page { max-width: 1200px; }
+.detail-page { width: 100%; }
 
 /* Breadcrumb */
 .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.78rem; }

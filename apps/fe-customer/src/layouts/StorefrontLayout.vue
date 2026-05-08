@@ -21,6 +21,8 @@ import { notificationApi, type NotificationItem } from "@/api/customer";
 import { storefrontApi } from "@/api/storefront";
 import type { Category } from "@/data/storefront";
 
+type BlogNavCategory = Awaited<ReturnType<typeof storefrontApi.getBlogCategories>>[number];
+
 const router = useRouter();
 const cart = useCartStore();
 const auth = useCustomerAuthStore();
@@ -29,6 +31,7 @@ const shopStore = useShopStore();
 
 const keyword = ref("");
 const apiCategories = ref<Category[]>([]);
+const blogCategories = ref<BlogNavCategory[]>([]);
 const loadingNotifications = ref(false);
 const notificationItems = ref<NotificationItem[]>([]);
 const notificationOpen = ref(false);
@@ -48,9 +51,15 @@ const submitSearch = () => {
 
 const loadCategories = async () => {
   try {
-    apiCategories.value = await storefrontApi.getCategories();
+    const [categories, blogs] = await Promise.all([
+      storefrontApi.getCategories(),
+      storefrontApi.getBlogCategories(),
+    ]);
+    apiCategories.value = categories;
+    blogCategories.value = blogs;
   } catch {
     apiCategories.value = [];
+    blogCategories.value = [];
   }
 };
 
@@ -153,7 +162,32 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <RouterLink to="/blog" class="nav-link">Blog</RouterLink>
+          <RouterLink to="/products?sort=new" class="nav-link">Hàng mới về</RouterLink>
+
+          <div class="nav-category">
+            <RouterLink to="/blog" class="nav-link nav-parent">
+              <span>Blog</span>
+              <ChevronDown v-if="blogCategories.length" :size="15" />
+            </RouterLink>
+
+            <div v-if="blogCategories.length" class="nav-dropdown">
+              <div class="nav-dropdown-inner">
+                <RouterLink to="/blog" class="nav-dropdown-item nav-dropdown-all">
+                  Xem tất cả bài viết
+                </RouterLink>
+
+                <RouterLink
+                  v-for="category in blogCategories"
+                  :key="category.id"
+                  :to="{ path: '/blog', query: { category: category.slug } }"
+                  class="nav-dropdown-item"
+                >
+                  <strong>{{ category.name }}</strong>
+                  <span>Vào ngay danh mục {{ category.name.toLowerCase() }}</span>
+                </RouterLink>
+              </div>
+            </div>
+          </div>
           <RouterLink to="/stores" class="nav-link">Cửa hàng</RouterLink>
         </nav>
 
@@ -162,7 +196,7 @@ onBeforeUnmount(() => {
           <input
             v-model="keyword"
             aria-label="Tìm kiếm"
-            placeholder="Tìm sofa, gốm sứ, tai nghe..."
+            placeholder="Tìm kiếm sản phẩm..."
           />
         </form>
 
