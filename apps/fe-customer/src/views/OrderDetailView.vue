@@ -54,10 +54,11 @@ const canRetryPayment = computed(
     order.value.status !== "CANCELLED" &&
     ["PENDING", "FAILED"].includes(order.value.paymentStatus),
 );
-const canConfirmReceived = computed(() => order.value?.status === "SHIPPED");
+const isPickup = computed(() => !!order.value?.pickupStore);
+const canConfirmReceived = computed(() => !isPickup.value && order.value?.status === "SHIPPED");
 const canReview = computed(() => ["DELIVERED", "COMPLETED"].includes(order.value?.status || ""));
 
-const steps = computed(() => [
+const deliverySteps = computed(() => [
   {
     label: "Đã đặt hàng",
     time: order.value?.date || "",
@@ -92,6 +93,37 @@ const steps = computed(() => [
     active: currentRank.value === 4,
   },
 ]);
+
+const pickupRank = computed(() => {
+  const ranks: Record<string, number> = {
+    PENDING: 0, PROCESSING: 2, CONFIRMED: 2, DELIVERED: 3, COMPLETED: 3, CANCELLED: -1,
+  };
+  return ranks[order.value?.status || "PENDING"] ?? 0;
+});
+
+const pickupStepsComputed = computed(() => [
+  {
+    label: "Đã đặt hàng",
+    time: order.value?.date || "",
+    icon: Check,
+    done: !isCancelled.value,
+  },
+  {
+    label: "Thanh toán",
+    time: order.value?.paymentStatusLabel || "",
+    icon: CreditCard,
+    done: order.value?.paymentStatus === "PAID",
+  },
+  {
+    label: "Đã nhận hàng",
+    time: "",
+    icon: Home,
+    done: pickupRank.value >= 3,
+    active: pickupRank.value === 2,
+  },
+]);
+
+const steps = computed(() => isPickup.value ? pickupStepsComputed.value : deliverySteps.value);
 
 const items = computed(() =>
   order.value?.items.length
@@ -249,6 +281,9 @@ onMounted(async () => {
       </section>
 
       <p v-if="errorMessage" class="state-card warning">{{ errorMessage }}</p>
+      <p v-else-if="isPickup && !['DELIVERED', 'COMPLETED'].includes(order?.status || '')" class="state-card info">
+        Đơn hàng sẽ được xác nhận khi bạn đến nhận tại cửa hàng.
+      </p>
       <p v-else-if="canConfirmReceived" class="state-card info">
         Nếu bạn đã nhận được hàng, hãy xác nhận để đơn được ghi nhận là đã giao.
       </p>
@@ -260,7 +295,7 @@ onMounted(async () => {
         <span>Mã đơn: {{ displayCode }}</span>
       </section>
 
-      <section v-if="order" class="tracking-panel" :class="{ cancelled: isCancelled }">
+      <section v-if="order" class="tracking-panel" :class="{ cancelled: isCancelled }" :style="{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }">
         <article v-for="step in steps" :key="step.label" :class="{ done: step.done, active: step.active }">
           <span><component :is="step.icon" :size="22" /></span>
           <strong>{{ step.label }}</strong>
@@ -269,12 +304,20 @@ onMounted(async () => {
       </section>
 
       <section v-if="order" class="info-grid">
-        <article>
+        <article v-if="!isPickup">
           <h2><MapPin :size="18" /> Địa chỉ nhận hàng</h2>
           <p>
             <strong>{{ order.receiverName || displayName }}</strong>
             {{ order.receiverPhone || "Đang cập nhật" }}<br />
             {{ order.shippingAddress || "Chưa có địa chỉ giao hàng cho đơn này." }}
+          </p>
+        </article>
+
+        <article v-if="isPickup">
+          <h2><MapPin :size="18" /> Cửa hàng nhận hàng</h2>
+          <p>
+            <strong>{{ order.pickupStore?.name || 'Cửa hàng' }}</strong>
+            {{ order.pickupStore?.address || 'Chưa có địa chỉ cửa hàng' }}
           </p>
         </article>
 

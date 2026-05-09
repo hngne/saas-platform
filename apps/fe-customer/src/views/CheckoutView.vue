@@ -462,13 +462,13 @@ onMounted(async () => {
           </template>
         </section>
 
-        <section class="checkout-card">
+        <section v-if="!pickup" class="checkout-card">
           <h2><Truck :size="22" /> Phương thức vận chuyển</h2>
           <div v-if="shippingOptions.length" class="choice-list">
             <label v-for="method in shippingOptions" :key="method.id" :class="{ active: selectedShippingId === method.id }">
-              <input v-model="selectedShippingId" type="radio" :value="method.id" :disabled="pickup" />
+              <input v-model="selectedShippingId" type="radio" :value="method.id" />
               <span><strong>{{ method.name }}</strong><small>{{ method.description || method.estimated_days || "Phí vận chuyển được tính theo cấu hình của cửa hàng" }}</small></span>
-              <b>{{ pickup ? "Miễn phí" : formatVnd(method.fee) }}</b>
+              <b>{{ formatVnd(method.fee) }}</b>
             </label>
           </div>
           <p v-else class="shipping-empty">

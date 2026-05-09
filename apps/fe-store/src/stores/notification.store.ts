@@ -37,7 +37,24 @@ export const useNotificationStore = defineStore('notification', () => {
 
   function mergeNotifications(remoteItems: NotificationItem[]) {
     const remoteIds = new Set(remoteItems.map((item) => item.id))
-    const transientItems = items.value.filter((item) => !remoteIds.has(item.id))
+
+    // 1. Lọc theo ID (cơ bản)
+    let transientItems = items.value.filter((item) => !remoteIds.has(item.id))
+
+    // 2. Lọc theo nội dung (chống trùng lặp từ websocket chưa có ID thật)
+    transientItems = transientItems.filter((transient) => {
+      const isDuplicate = remoteItems.some(
+        (remote) =>
+          remote.title === transient.title &&
+          remote.body === transient.body &&
+          remote.type === transient.type &&
+          // Chênh lệch thời gian không quá 2 phút
+          Math.abs(
+            new Date(remote.created_at).getTime() - new Date(transient.created_at).getTime(),
+          ) < 120000,
+      )
+      return !isDuplicate
+    })
 
     items.value = [...transientItems, ...remoteItems].sort(
       (left, right) =>
@@ -161,6 +178,7 @@ export const useNotificationStore = defineStore('notification', () => {
   return {
     items,
     loading,
+    socket,
     connected,
     unreadCount,
     latestToast,

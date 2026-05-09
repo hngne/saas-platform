@@ -321,20 +321,31 @@ export class PaymentService {
 
     if (!order) return;
 
-    notiService.create(context.tenant!.id, {
-      userId: order.customer_id,
-      userType: "CUSTOMER",
-      title: "Thanh toán thành công",
-      body: `Đơn hàng #${context.orderId.slice(-8).toUpperCase()} đã thanh toán ${order.total}đ qua VNPay.`,
-      type: "PAYMENT",
-    });
+    await Promise.allSettled([
+      notiService.create(context.tenant!.id, {
+        userId: order.customer_id,
+        userType: "CUSTOMER",
+        title: "Thanh toán thành công",
+        body: `Đơn hàng #${context.orderId.slice(-8).toUpperCase()} đã thanh toán ${order.total}đ qua VNPay.`,
+        type: "PAYMENT",
+      }),
+      notiService.notifyMerchants(
+        context.tenant!.id,
+        "Thanh toán VNPay",
+        `Đơn #${context.orderId.slice(-8).toUpperCase()} đã thanh toán thành công.`,
+        "PAYMENT",
+      ),
+    ]);
 
-    notiService.notifyMerchants(
-      context.tenant!.id,
-      "Thanh toán VNPay",
-      `Đơn #${context.orderId.slice(-8).toUpperCase()} đã thanh toán thành công.`,
-      "PAYMENT",
-    );
+    // Sync UI cho merchant
+    try {
+      const { getIO } = require("@/configs/socket");
+      const io = getIO();
+      io.to(`tenant:${context.tenant!.id}:merchants`).emit("order:updated", {
+        orderId: context.orderId,
+        paymentStatus: "PAID",
+      });
+    } catch { /* ignore */ }
   }
 
   private async notifyPaymentFailed(context: PaymentContext) {
@@ -346,7 +357,7 @@ export class PaymentService {
 
     if (!order) return;
 
-    notiService.create(context.tenant!.id, {
+    await notiService.create(context.tenant!.id, {
       userId: order.customer_id,
       userType: "CUSTOMER",
       title: "Thanh toán chưa hoàn tất",

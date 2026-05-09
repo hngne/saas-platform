@@ -45,20 +45,48 @@ export class NotificationService {
 
   /**
    * Gửi thông báo broadcast cho TẤT CẢ merchant của 1 shop.
+   * Đồng thời lưu vào DB cho từng merchant để khi F5 vẫn còn dữ liệu.
    */
-  notifyMerchants(tenantId: string, title: string, body: string, type: "ORDER" | "INVENTORY" | "SYSTEM" | "PAYMENT") {
+  async notifyMerchants(tenantId: string, title: string, body: string, type: "ORDER" | "INVENTORY" | "SYSTEM" | "PAYMENT") {
     try {
+      const now = new Date();
+
+      // 1. Tìm tất cả merchant (user) đang hoạt động trong DB của tenant
+      const merchants = await this.db.user.findMany({
+        where: {
+          status: "ACTIVE",
+          deleted_at: null,
+        },
+        select: { id: true },
+      });
+
+      // 2. Lưu thông báo vào DB cho từng merchant
+      if (merchants.length > 0) {
+        await this.db.notification.createMany({
+          data: merchants.map((m) => ({
+            user_id: m.id,
+            user_type: "USER",
+            title,
+            body,
+            type,
+            created_at: now,
+          })),
+        });
+      }
+
+      // 3. Emit socket real-time cho các client đang online
       const io = getIO();
       io.to(`tenant:${tenantId}:merchants`).emit("notification:new", {
         title,
         body,
         type,
         is_read: false,
-        created_at: new Date(),
+        created_at: now,
       });
     } catch (err) {
-      logger.warn("[NotificationService] Emit to merchants failed", {
-        tenant: tenantId, userId: "system", userType: "ADMIN",
+      logger.warn("[NotificationService] notifyMerchants failed", {
+        tenant: tenantId,
+        error: err instanceof Error ? err.message : String(err),
       });
     }
   }

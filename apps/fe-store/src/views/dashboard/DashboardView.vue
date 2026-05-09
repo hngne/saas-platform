@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { dashboardService } from '@/services/dashboard.service'
 import { useAppToast } from '@/composables/useToast'
 import { formatVND, formatNumber } from '@/utils/format'
 import Button from 'primevue/button'
+import { useNotificationStore } from '@/stores/notification.store'
 
 const toast = useAppToast()
+const notificationStore = useNotificationStore()
 const loading = ref(true)
 
 // Summary
@@ -88,8 +90,8 @@ const topNotSelling = ref<any[]>([])
 const orderStatus = ref<any>({ total: 0, breakdown: [] })
 const donutOptions = ref<any>({
   chart: { type: 'donut', fontFamily: 'Inter' },
-  colors: ['#FF6B2B', '#F59E0B', '#FFD700', '#9CA3AF', '#10B981', '#EF4444'],
-  labels: ['Hoàn tất', 'Đã giao', 'Đang giao', 'Chờ xử lý', 'Đang xử lý', 'Đã hủy'],
+  colors: ['#9CA3AF', '#3B82F6', '#FFD700', '#10B981', '#EF4444'],
+  labels: ['Chờ xử lý', 'Đang xử lý', 'Đang giao', 'Đã giao', 'Đã hủy'],
   legend: { show: false },
   dataLabels: { enabled: false },
   plotOptions: {
@@ -237,8 +239,13 @@ const fetchOrderStatus = async () => {
     const { data } = await dashboardService.getOrderStatus()
     const result = data.data
     orderStatus.value = result
-    const statusOrder = ['COMPLETED', 'DELIVERED', 'SHIPPED', 'PENDING', 'PROCESSING', 'CANCELLED']
+    const statusOrder = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']
     donutSeries.value = statusOrder.map(s => {
+      if (s === 'DELIVERED') {
+        const delivered = result.breakdown?.find((b: any) => b.status === 'DELIVERED')?.count || 0
+        const completed = result.breakdown?.find((b: any) => b.status === 'COMPLETED')?.count || 0
+        return delivered + completed
+      }
       const item = result.breakdown?.find((b: any) => b.status === s)
       return item?.count || 0
     })
@@ -290,9 +297,46 @@ const exportFile = async (type: 'excel' | 'pdf') => {
 
 watch(revenueType, () => fetchRevenue())
 
-onMounted(async () => {
-  await Promise.all([fetchSummary(), fetchRevenue(), fetchTop(), fetchOrderStatus(), fetchRecentOrders()])
-  loading.value = false
+const fetchAllData = async (silent = false) => {
+  if (!silent) loading.value = true
+  try {
+    await Promise.all([
+      fetchSummary(),
+      fetchRevenue(),
+      fetchTop(),
+      fetchOrderStatus(),
+      fetchRecentOrders()
+    ])
+  } finally {
+    if (!silent) loading.value = false
+  }
+}
+
+const handleSocketUpdate = (payload: any) => {
+  console.log('[Dashboard] Received order update signal:', payload)
+  // Refresh data silently after a small delay to ensure DB consistency
+  setTimeout(() => {
+    fetchAllData(true)
+  }, 500)
+}
+
+onMounted(() => {
+  fetchAllData()
+  
+  if (notificationStore.socket) {
+    notificationStore.socket.on('order:updated', handleSocketUpdate)
+  }
+})
+
+onUnmounted(() => {
+  if (notificationStore.socket) {
+    notificationStore.socket.off('order:updated', handleSocketUpdate)
+  }
+})
+
+watch(() => notificationStore.socket, (newSocket, oldSocket) => {
+  if (oldSocket) oldSocket.off('order:updated', handleSocketUpdate)
+  if (newSocket) newSocket.on('order:updated', handleSocketUpdate)
 })
 </script>
 
@@ -426,7 +470,16 @@ onMounted(async () => {
           </div>
         </div>
         <div class="donut-legend">
-          <div v-for="item in orderStatus.breakdown" :key="item.status" class="legend-item">
+          <div
+            v-for="item in orderStatus.breakdown
+              ?.filter((b: any) => b.status !== 'COMPLETED')
+              .map((b: any) => b.status === 'DELIVERED'
+                ? { ...b, count: b.count + (orderStatus.breakdown.find((c: any) => c.status === 'COMPLETED')?.count || 0), percentage: b.percentage + (orderStatus.breakdown.find((c: any) => c.status === 'COMPLETED')?.percentage || 0) }
+                : b
+              )"
+            :key="item.status"
+            class="legend-item"
+          >
             <span class="legend-dot" :style="{ background: statusColorMap[item.status] }"></span>
             <span class="legend-label">{{ getStatusLabel(item.status) }}</span>
             <span class="legend-value">{{ item.percentage }}%</span>

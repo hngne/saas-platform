@@ -8,6 +8,7 @@ import { CheckoutDto, ValidateVoucherDto } from "./order-storefront.validator";
 import { LogService } from "@/shared/services/log.service";
 import { NotificationService } from "@/modules/notification/notification.service";
 import logger from "@/configs/logger";
+import { getIO } from "@/configs/socket";
 
 export class OrderStorefrontController {
   private buildOrderDetailInclude() {
@@ -74,24 +75,37 @@ export class OrderStorefrontController {
     const db = getTenantDB(req.user!.dbName!);
     const notiService = new NotificationService(db);
 
-    notiService.notifyMerchants(
-      req.user!.tenantId!,
-      "Đơn hàng mới",
-      `Đơn hàng #${order.id.slice(-8).toUpperCase()} - ${order.total}đ (${dto.payment_method})`,
-      "ORDER",
-    );
-
-    notiService.create(req.user!.tenantId!, {
-      userId: req.user!.sub,
-      userType: "CUSTOMER",
-      title: "Đặt hàng thành công",
-      body: `Đơn hàng #${order.id.slice(-8).toUpperCase()} đã được tiếp nhận. ${
-        dto.payment_method === "VNPAY"
-          ? "Vui lòng thanh toán qua VNPay."
-          : "Chúng tôi sẽ liên hệ sớm."
-      }`,
-      type: "ORDER",
-    });
+    await Promise.allSettled([
+      notiService.notifyMerchants(
+        req.user!.tenantId!,
+        "Đơn hàng mới",
+        `Đơn hàng #${order.id.slice(-8).toUpperCase()} - ${order.total}đ (${dto.payment_method})`,
+        "ORDER",
+      ),
+      notiService.create(req.user!.tenantId!, {
+        userId: req.user!.sub,
+        userType: "CUSTOMER",
+        title: "Đặt hàng thành công",
+        body: `Đơn hàng #${order.id.slice(-8).toUpperCase()} đã được tiếp nhận. ${
+          dto.payment_method === "VNPAY"
+            ? "Vui lòng thanh toán qua VNPay."
+            : "Chúng tôi sẽ liên hệ sớm."
+        }`,
+        type: "ORDER",
+      }),
+      // Emit order:updated để Dashboard load lại
+      (async () => {
+        try {
+          const io = getIO();
+          io.to(`tenant:${req.user!.tenantId}:merchants`).emit("order:updated", {
+            orderId: order.id,
+            status: order.order_status,
+          });
+        } catch (err) {
+          logger.error("[Socket] Emit order:updated failed", err);
+        }
+      })(),
+    ]);
 
     res.status(201).json(APIResponse.Created("Đặt hàng thành công", { order }));
   };
@@ -189,15 +203,23 @@ export class OrderStorefrontController {
         body: `Đơn hàng #${orderCode} đã được ghi nhận là đã giao.`,
         type: "ORDER",
       }),
-      Promise.resolve(
-        notiService.notifyMerchants(
-          req.user!.tenantId!,
-          "Khách đã xác nhận nhận hàng",
-          `Đơn hàng #${orderCode} đã được ghi nhận là đã giao.`,
-          "ORDER",
-        ),
+      notiService.notifyMerchants(
+        req.user!.tenantId!,
+        "Khách đã xác nhận nhận hàng",
+        `Đơn hàng #${orderCode} đã được ghi nhận là đã giao.`,
+        "ORDER",
       ),
     ]);
+
+    // Sync UI cho merchant
+    try {
+      const { getIO } = require("@/configs/socket");
+      const io = getIO();
+      io.to(`tenant:${req.user!.tenantId!}:merchants`).emit("order:updated", {
+        orderId: orderId,
+        status: "DELIVERED",
+      });
+    } catch { /* ignore */ }
 
     const refreshedOrder = await db.order.findFirst({
       where: {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
@@ -8,6 +8,7 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import { useAppToast } from '@/composables/useToast'
 import { orderService, type Order, type OrderStatus, type UpdateOrderStatusDto } from '@/services/order.service'
 import { formatDateTime, formatVND } from '@/utils/format'
+import { useNotificationStore } from '@/stores/notification.store'
 
 type ActionTone = 'primary' | 'danger'
 
@@ -21,36 +22,67 @@ interface StatusAction {
 const route = useRoute()
 const router = useRouter()
 const toast = useAppToast()
+const notificationStore = useNotificationStore()
 
 const loading = ref(true)
 const order = ref<Order | null>(null)
 const statusNote = ref('')
 const updatingStatus = ref<UpdateOrderStatusDto['order_status'] | ''>('')
 
-const progressSteps = [
+const isPickup = computed(() => !!order.value?.pickup_store_name)
+
+const deliverySteps = [
   { key: 'PENDING', label: 'Chờ xử lý', icon: 'pi pi-check' },
   { key: 'PROCESSING', label: 'Đã xác nhận', icon: 'pi pi-box' },
   { key: 'SHIPPED', label: 'Đang giao', icon: 'pi pi-truck' },
   { key: 'DELIVERED', label: 'Đã giao', icon: 'pi pi-home' },
 ] as const
 
-const progressIndexMap: Record<'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED', number> = {
-  PENDING: 0,
-  PROCESSING: 1,
-  SHIPPED: 2,
-  DELIVERED: 3,
-  COMPLETED: 3,
+const pickupSteps = [
+  { key: 'PENDING', label: 'Chờ xử lý', icon: 'pi pi-check' },
+  { key: 'PROCESSING', label: 'Đã xác nhận', icon: 'pi pi-box' },
+  { key: 'DELIVERED', label: 'Đã nhận hàng', icon: 'pi pi-home' },
+] as const
+
+const progressSteps = computed(() => isPickup.value ? pickupSteps : deliverySteps)
+
+const deliveryIndexMap: Record<string, number> = {
+  PENDING: 0, PROCESSING: 1, SHIPPED: 2, DELIVERED: 3, COMPLETED: 3,
+}
+const pickupIndexMap: Record<string, number> = {
+  PENDING: 0, PROCESSING: 1, DELIVERED: 2, COMPLETED: 2,
 }
 
-const progressStatus = computed<'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED'>(() => {
+const progressStatus = computed(() => {
   if (!order.value || order.value.order_status === 'CANCELLED') return 'PENDING'
-  return order.value.order_status as 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED'
+  return order.value.order_status
 })
 
-const currentProgressIndex = computed(() => progressIndexMap[progressStatus.value])
+const currentProgressIndex = computed(() => {
+  const map = isPickup.value ? pickupIndexMap : deliveryIndexMap
+  return map[progressStatus.value] ?? 0
+})
 
 const availableActions = computed<StatusAction[]>(() => {
   if (!order.value) return []
+
+  if (isPickup.value) {
+    const pickupActions: Record<OrderStatus, StatusAction[]> = {
+      PENDING: [
+        { label: 'Xác nhận đơn', status: 'PROCESSING', tone: 'primary', icon: 'pi pi-check-circle' },
+        { label: 'Hủy đơn', status: 'CANCELLED', tone: 'danger', icon: 'pi pi-times' },
+      ],
+      PROCESSING: [
+        { label: 'Xác nhận đã nhận hàng', status: 'DELIVERED', tone: 'primary', icon: 'pi pi-home' },
+        { label: 'Hủy đơn', status: 'CANCELLED', tone: 'danger', icon: 'pi pi-times' },
+      ],
+      SHIPPED: [],
+      DELIVERED: [],
+      COMPLETED: [],
+      CANCELLED: [],
+    }
+    return pickupActions[order.value.order_status] || []
+  }
 
   const actionMap: Record<OrderStatus, StatusAction[]> = {
     PENDING: [
@@ -132,7 +164,30 @@ const handleStatusUpdate = async (targetStatus: UpdateOrderStatusDto['order_stat
   }
 }
 
-onMounted(fetchOrder)
+const handleOrderUpdated = (data: any) => {
+  if (data.orderId === route.params.id) {
+    fetchOrder()
+    toast.info('Trạng thái đơn hàng vừa có cập nhật mới')
+  }
+}
+
+onMounted(() => {
+  fetchOrder()
+  if (notificationStore.socket) {
+    notificationStore.socket.on('order:updated', handleOrderUpdated)
+  }
+})
+
+onUnmounted(() => {
+  if (notificationStore.socket) {
+    notificationStore.socket.off('order:updated', handleOrderUpdated)
+  }
+})
+
+watch(() => notificationStore.socket, (newSocket, oldSocket) => {
+  if (oldSocket) oldSocket.off('order:updated', handleOrderUpdated)
+  if (newSocket) newSocket.on('order:updated', handleOrderUpdated)
+})
 </script>
 
 <template>
@@ -168,13 +223,18 @@ onMounted(fetchOrder)
         <span>Đơn đã hủy. Tồn kho và voucher đã được hoàn về theo nghiệp vụ hiện tại.</span>
       </div>
 
+      <div v-else-if="deliveredFinal && isPickup" class="state-banner success">
+        <i class="pi pi-check-circle"></i>
+        <span>Khách đã nhận hàng tại cửa hàng. Nếu là COD, hệ thống đã ghi nhận thanh toán.</span>
+      </div>
+
       <div v-else-if="deliveredFinal" class="state-banner success">
         <i class="pi pi-check-circle"></i>
         <span>Đơn đã giao cho khách. Nếu là COD, hệ thống đã ghi nhận thanh toán khi chuyển sang đã giao.</span>
       </div>
 
       <div class="progress-grid">
-        <div class="timeline">
+        <div class="timeline" :style="{ gridTemplateColumns: `repeat(${progressSteps.length}, minmax(0, 1fr))` }">
           <div
             v-for="(step, index) in progressSteps"
             :key="step.key"

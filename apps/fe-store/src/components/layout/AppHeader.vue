@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
             <div v-else-if="!notifStore.items.length" class="notif-dd-empty">Chưa có thông báo nào</div>
 
             <button
-              v-for="n in notifStore.items.slice(0, 8)"
+              v-for="n in notifStore.items.slice(0, 15)"
               v-else
               :key="n.id"
               type="button"
@@ -409,6 +409,7 @@ onBeforeUnmount(() => {
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -5,6 +5,7 @@ export class DashboardRepository {
   constructor(private db: RetailClient) {}
 
   // ── Summary Cards ──────────────────────────────────
+  // ── Summary Cards ──────────────────────────────────
   async getSummary() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -39,14 +40,14 @@ export class DashboardRepository {
         },
         _sum: { total: true },
       }),
-      this.db.order.aggregate({
+      // Doanh thu hôm nay tính dựa trên thời điểm thanh toán (paid_at)
+      this.db.payment.aggregate({
         where: {
-          payment_status: "PAID",
-          order_status: { not: "CANCELLED" },
-          deleted_at: null,
-          created_at: { gte: today, lt: tomorrow },
+          status: "PAID",
+          paid_at: { gte: today, lt: tomorrow },
+          order: { deleted_at: null, order_status: { not: "CANCELLED" } },
         },
-        _sum: { total: true },
+        _sum: { amount: true },
       }),
       this.db.product.count({ where: { deleted_at: null, is_active: true } }),
       this.db.product.count({
@@ -72,7 +73,7 @@ export class DashboardRepository {
       },
       revenue: {
         total: totalRevenue._sum.total ?? 0,
-        today: todayRevenue._sum.total ?? 0,
+        today: todayRevenue._sum.amount ?? 0,
       },
       products: {
         total: totalProducts,
@@ -90,21 +91,29 @@ export class DashboardRepository {
       filter.from ?? new Date(new Date().setMonth(new Date().getMonth() - 1));
     const to = filter.to ?? new Date();
 
+    // Query các đơn hàng có ngày thanh toán trong khoảng filter
     const orders = await this.db.order.findMany({
       where: {
         payment_status: "PAID",
         order_status: { not: "CANCELLED" },
         deleted_at: null,
-        created_at: { gte: from, lte: to },
+        payment: {
+          paid_at: { gte: from, lte: to },
+        },
       },
-      select: { total: true, created_at: true },
+      select: {
+        total: true,
+        created_at: true,
+        payment: { select: { paid_at: true } },
+      },
     });
 
     // Group phía JS theo type
     const grouped = new Map<string, { revenue: number; count: number }>();
 
     for (const order of orders) {
-      const date = new Date(order.created_at);
+      // Ưu tiên dùng paid_at, nếu không có (đơn cũ) thì fallback created_at
+      const date = new Date(order.payment?.paid_at || order.created_at);
       let key: string;
 
       if (filter.type === "year") {
@@ -128,7 +137,17 @@ export class DashboardRepository {
         revenue: data.revenue,
         order_count: data.count,
       }))
-      .sort((a, b) => a.time.localeCompare(b.time));
+      .sort((a, b) => {
+        // Sort theo thời gian thực tế
+        const [d1, m1, y1] = a.time.split("/");
+        const [d2, m2, y2] = b.time.split("/");
+        if (y1 && y2) {
+          const dt1 = new Date(Number(y1), Number(m1) - 1, Number(d1 || 1)).getTime();
+          const dt2 = new Date(Number(y2), Number(m2) - 1, Number(d2 || 1)).getTime();
+          return dt1 - dt2;
+        }
+        return a.time.localeCompare(b.time);
+      });
   }
 
   // ── Top sản phẩm bán chạy ──────────────────────────
@@ -143,7 +162,9 @@ export class DashboardRepository {
           payment_status: "PAID",
           order_status: { not: "CANCELLED" },
           deleted_at: null,
-          created_at: { gte: from, lte: to },
+          payment: {
+            paid_at: { gte: from, lte: to },
+          },
         },
       },
       include: {
@@ -207,7 +228,9 @@ export class DashboardRepository {
           payment_status: "PAID",
           order_status: { not: "CANCELLED" },
           deleted_at: null,
-          created_at: { gte: from, lte: to },
+          payment: {
+            paid_at: { gte: from, lte: to },
+          },
         },
       },
       select: { variant: { select: { product_id: true } } },

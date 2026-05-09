@@ -42,6 +42,7 @@ saas-platform/
 ## ✨ Tính năng nổi bật
 
 ### Chủ shop (Merchant CMS)
+
 - Khởi tạo cửa hàng với subdomain riêng
 - Quản lý sản phẩm đa biến thể (Size, Color), thuộc tính, danh mục
 - Quản lý tồn kho realtime
@@ -51,12 +52,14 @@ saas-platform/
 - Cấu hình giờ làm việc, địa chỉ pickup
 
 ### Khách hàng (Storefront)
+
 - Giao diện mua sắm hiện đại, responsive
 - Lọc sản phẩm theo danh mục, thuộc tính, giá
 - Thanh toán: Giao hàng tận nơi / Nhận tại cửa hàng
 - Đánh giá sản phẩm sau khi nhận hàng thành công
 
 ### Quản trị viên (Super Admin)
+
 - Quản lý Tenant (các shop) trong hệ thống
 - Quản lý danh mục dùng chung, gói dịch vụ
 
@@ -90,34 +93,67 @@ saas-platform/
 
 ## 🛠️ Công nghệ sử dụng
 
-| Layer | Công nghệ |
-|-------|-----------|
-| **Backend** | Node.js, Express.js, TypeScript |
-| **ORM** | Prisma |
-| **Database** | MySQL 8.0 (chính), MongoDB (logs), Redis (cache) |
-| **AI** | Google Generative AI (Gemini) |
-| **Realtime** | Socket.io |
-| **Storage** | Cloudinary |
-| **Frontend** | Vue 3, Vite, Pinia, PrimeVue, TailwindCSS 4 |
-| **Charts** | ApexCharts |
-| **Containerization** | Docker, Docker Compose, Nginx |
+| Layer                | Công nghệ                                        |
+| -------------------- | ------------------------------------------------ |
+| **Backend**          | Node.js, Express.js, TypeScript                  |
+| **ORM**              | Prisma                                           |
+| **Database**         | MySQL 8.0 (chính), MongoDB (logs), Redis (cache) |
+| **AI**               | Google Generative AI (Gemini)                    |
+| **Realtime**         | Socket.io                                        |
+| **Storage**          | Cloudinary                                       |
+| **Frontend**         | Vue 3, Vite, Pinia, PrimeVue, TailwindCSS 4      |
+| **Charts**           | ApexCharts                                       |
+| **Containerization** | Docker, Docker Compose, Nginx                    |
 
 ---
 
 ## 🚀 Hướng dẫn cài đặt
 
-### Yêu cầu hệ thống
-- **Node.js** >= 18
-- **Docker & Docker Compose** (cho production hoặc chạy DB)
+### 💻 Yêu cầu hệ thống
 
-### Cách 1: Chạy Development (Local)
+Dự án hỗ trợ 2 cách cài đặt tùy theo nhu cầu của bạn:
+
+1.  **Chạy qua Docker (Khuyên dùng - Plug & Play):**
+    - Chỉ cần cài đặt **Docker Desktop**. Không cần cài Node.js hay Database trên máy thật.
+2.  **Chạy Development (Dành cho Coder):**
+    - **Node.js** >= 18
+    - **MySQL, Redis, MongoDB** (Có thể chạy lẻ qua Docker hoặc cài trực tiếp).
+
+---
+
+### 🐳 Cách 1: Chạy nhanh bằng Docker (Dễ nhất)
+
+Đây là cách tối ưu nhất để xem demo mà không cần cài đặt môi trường phức tạp.
 
 ```bash
 # 1. Clone repo
 git clone https://github.com/hngne/saas-platform.git
 cd saas-platform
 
-# 2. Cài đặt dependencies (tất cả apps)
+# 2. Cấu hình biến môi trường (Docker)
+cp .env.example .env
+# Mở file .env và điền các key cần thiết (Cloudinary, Gemini...)
+
+# 3. Khởi động toàn bộ hệ thống
+docker-compose up -d --build
+
+# 4. Đồng bộ Database (BẮT BUỘC cho lần đầu chạy)
+# Lệnh này sẽ tạo các bảng cần thiết trong Database
+docker exec -it saas_be npx prisma db push --schema=./prisma/schema.prisma
+
+# 5. Khởi tạo tài khoản Admin (Dùng Postman gọi API)
+# URL: POST http://api.lvh.me/auth/admin/register-temp
+# Body: { "email": "admin@gmail.com", "password": "12345678", "name": "Admin" }
+```
+
+---
+
+### 🛠️ Cách 2: Chạy Development (Cho lập trình viên)
+
+Dùng cách này khi bạn muốn sửa code và thấy thay đổi ngay lập tức (Hot Reload).
+
+```bash
+# 1. Cài đặt dependencies cho từng App
 npm install
 cd apps/be && npm install && cd ../..
 cd apps/fe-store && npm install && cd ../..
@@ -125,65 +161,52 @@ cd apps/fe-customer && npm install && cd ../..
 cd apps/fe-admin && npm install && cd ../..
 cd apps/fe-landing && npm install && cd ../..
 
-# 3. Khởi động Database bằng Docker
+# 2. Chạy Database bằng Docker (Chỉ chạy DB, không chạy App)
 docker-compose up -d db redis mongodb
 
-# 4. Cấu hình Backend
+# 3. Cấu hình .env cho Backend
 cp apps/be/.env.example apps/be/.env.development
-# Mở file .env.development và điền các giá trị thật
 
-# 5. Chạy Prisma Migrate
+# 4. Build Prisma Client
 cd apps/be
 npx prisma generate --schema=./prisma/schema.prisma
 npx prisma generate --schema=./prisma-retail/schema.prisma
-npx prisma migrate dev --schema=./prisma/schema.prisma
+npx prisma db push --schema=./prisma/schema.prisma
 cd ../..
 
-# 6. Chạy toàn bộ hệ thống
+# 5. Chạy tất cả các App cùng lúc
 npm run dev
 ```
 
-**Các cổng mặc định:**
+---
 
-| App | URL |
-|-----|-----|
-| Backend API | `http://localhost:8080` |
-| Landing | `http://localhost:3000` |
-| Customer | `http://localhost:3004` |
-| Merchant CMS | `http://localhost:3002` |
-| Admin | `http://localhost:3003` |
+### 🌐 Danh sách URL mặc định
 
-### Cách 2: Chạy Production (Docker)
+Sau khi khởi chạy thành công, bạn có thể truy cập các địa chỉ sau:
 
-```bash
-# 1. Clone repo
-git clone https://github.com/hngne/saas-platform.git
-cd saas-platform
+| Ứng dụng         | Địa chỉ (URL)                              | Cổng |
+| :--------------- | :----------------------------------------- | :--- |
+| **Landing Page** | [http://lvh.me](http://lvh.me)             | 80   |
+| **Admin Portal** | [http://admin.lvh.me](http://admin.lvh.me) | 80   |
+| **Merchant CMS** | [http://shop.lvh.me](http://shop.lvh.me)   | 80   |
+| **Storefront**   | [http://ten-shop.lvh.me](http://lvh.me)    | 80   |
+| **Backend API**  | [http://api.lvh.me](http://api.lvh.me)     | 80   |
 
-# 2. Cấu hình biến môi trường
-cp .env.example .env
-# Mở file .env và điền các giá trị thật (DB password, JWT secret, Cloudinary...)
-
-# 3. Build và chạy toàn bộ
-docker-compose up -d --build
-
-# 4. Kiểm tra trạng thái
-docker-compose ps
-```
+> _Lưu ý: Domain `lvh.me` mặc định trỏ về `127.0.0.1` (localhost) nên bạn không cần cài đặt thêm._
 
 **Hệ thống Docker bao gồm:**
 
-| Container | Mô tả | Port |
-|-----------|--------|------|
-| `saas_db` | MySQL 8.0 | 3306 |
-| `saas_redis` | Redis (Cache) | 6379 |
-| `saas_mongo` | MongoDB (Logs) | 27017 |
-| `saas_be` | Backend API | 8080 |
-| `saas_fe_landing` | Landing Page | — |
-| `saas_fe_admin` | Admin Portal | — |
-| `saas_fe_store` | Merchant CMS | — |
-| `saas_fe_customer` | Storefront | — |
-| `saas_proxy` | Nginx Gateway | 80 |
+| Container          | Mô tả          | Port  |
+| ------------------ | -------------- | ----- |
+| `saas_db`          | MySQL 8.0      | 3306  |
+| `saas_redis`       | Redis (Cache)  | 6379  |
+| `saas_mongo`       | MongoDB (Logs) | 27017 |
+| `saas_be`          | Backend API    | 8080  |
+| `saas_fe_landing`  | Landing Page   | —     |
+| `saas_fe_admin`    | Admin Portal   | —     |
+| `saas_fe_store`    | Merchant CMS   | —     |
+| `saas_fe_customer` | Storefront     | —     |
+| `saas_proxy`       | Nginx Gateway  | 80    |
 
 ---
 

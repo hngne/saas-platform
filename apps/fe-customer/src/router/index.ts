@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useCustomerAuthStore } from "@/stores/customer-auth.store";
+import { useShopStore } from "@/stores/shop.store";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -160,6 +161,9 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
+  const shopStore = useShopStore();
+  shopStore.fetchProfile().catch(() => null);
+
   if (!to.meta.requiresAuth) return true;
   const auth = useCustomerAuthStore();
   const isAuthenticated = await auth.bootstrapAuth();

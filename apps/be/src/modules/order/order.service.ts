@@ -5,7 +5,7 @@ import { OrderFilterDto, OrderStatus, UpdateOrderStatusDto } from "./order.valid
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["PROCESSING", "CANCELLED"],
-  PROCESSING: ["SHIPPED", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "DELIVERED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
   DELIVERED: [],
   COMPLETED: [],
@@ -36,10 +36,22 @@ export class OrderService {
   ) => {
     const order = await this.getById(id);
 
+    const isPickup = !!(order as any).pickup_store;
     const allowed = VALID_TRANSITIONS[order.order_status as OrderStatus] ?? [];
     if (!allowed.includes(dto.order_status)) {
       throw new BadRequestException(
         `Không thể chuyển từ "${order.order_status}" sang "${dto.order_status}"`,
+      );
+    }
+
+    // Đơn giao hàng (không pickup) không được skip SHIPPED
+    if (
+      dto.order_status === "DELIVERED" &&
+      order.order_status === "PROCESSING" &&
+      !isPickup
+    ) {
+      throw new BadRequestException(
+        "Đơn giao hàng phải qua trạng thái 'Đang giao' trước khi xác nhận đã giao",
       );
     }
 

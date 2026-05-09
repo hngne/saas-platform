@@ -40,6 +40,18 @@ export class OrderController {
     const dto = updateOrderStatusSchema.parse(req.body);
     const userId = req.user!.sub;
     const data = await this.getService(req).updateStatus(id, dto, userId);
+
+    // Sync UI cho các merchant khác
+    try {
+      const { getIO } = require("@/configs/socket");
+      const io = getIO();
+      io.to(`tenant:${req.user!.tenantId}:merchants`).emit("order:updated", {
+        orderId: id,
+        status: data.order_status,
+        paymentStatus: data.payment_status,
+      });
+    } catch { /* ignore */ }
+
     res
       .status(200)
       .json(APIResponse.OK("Cập nhật trạng thái đơn hàng thành công", data));
